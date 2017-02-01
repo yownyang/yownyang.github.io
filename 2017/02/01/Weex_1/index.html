@@ -88,14 +88,16 @@
 
 
 基于RN，优于RN
-JS语法，Native体验
+js语法，Native体验
 iOS/Android从写UI的噩梦脱离，专注于内在
 文档稍烂
 
 
 Weex原理
 
- -">
+
+web：web端的js—&amp;gt;Weex的中间层处理—&amp;gt;调用Native控件—&amp;gt;UI Render
+Native：Native—&amp;gt;JSContext(apple提供的一个js与OC交互的Framework)—&amp;gt;js语法执行—&amp;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS_Weex源码解读系列一">
 <meta property="og:url" content="http://yoursite.com/2017/02/01/Weex_1/index.html">
@@ -104,29 +106,33 @@ Weex原理
 
 
 基于RN，优于RN
-JS语法，Native体验
+js语法，Native体验
 iOS/Android从写UI的噩梦脱离，专注于内在
 文档稍烂
 
 
 Weex原理
 
- -">
-<meta property="og:updated_time" content="2017-02-01T07:39:20.000Z">
+
+web：web端的js—&amp;gt;Weex的中间层处理—&amp;gt;调用Native控件—&amp;gt;UI Render
+Native：Native—&amp;gt;JSContext(apple提供的一个js与OC交互的Framework)—&amp;gt;js语法执行—&amp;">
+<meta property="og:updated_time" content="2017-02-01T08:33:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS_Weex源码解读系列一">
 <meta name="twitter:description" content="Weex
 
 
 基于RN，优于RN
-JS语法，Native体验
+js语法，Native体验
 iOS/Android从写UI的噩梦脱离，专注于内在
 文档稍烂
 
 
 Weex原理
 
- -">
+
+web：web端的js—&amp;gt;Weex的中间层处理—&amp;gt;调用Native控件—&amp;gt;UI Render
+Native：Native—&amp;gt;JSContext(apple提供的一个js与OC交互的Framework)—&amp;gt;js语法执行—&amp;">
 
 
 
@@ -308,7 +314,7 @@ Weex原理
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-01T15:39:20+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-01T16:33:44+08:00">
                 2017-02-01
               </time>
             
@@ -367,14 +373,27 @@ Weex原理
 </blockquote>
 <ul>
 <li>基于RN，优于RN</li>
-<li>JS语法，Native体验</li>
+<li>js语法，Native体验</li>
 <li>iOS/Android从写UI的噩梦脱离，专注于内在</li>
 <li>文档稍烂</li>
 </ul>
 <blockquote>
 <p>Weex原理</p>
 </blockquote>
-<p> - </p>
+<ul>
+<li>web：web端的js—&gt;Weex的中间层处理—&gt;调用Native控件—&gt;UI Render</li>
+<li>Native：Native—&gt;JSContext(apple提供的一个js与OC交互的Framework)—&gt;js语法执行—&gt;web端接收处理</li>
+</ul>
+<blockquote>
+<p>Weex使用</p>
+</blockquote>
+<ul>
+<li>Component: 自定义控件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要，注意WXComponent</li>
+<li>handler: js调用Native，Native返回值。weex官方定义了常用的部分，如图片下载返回给js使用。如果需要自定义，注意WXModuleProtocol</li>
+<li>module：js调用Native，Native无返回值。这个基本用到就是自定义，同样注意注意WXModuleProtocol</li>
+<li>上述三种均需要在调用完<code>[WXSDKEngine initSDKEnvironment]</code>之后进行注册</li>
+</ul>
+<p>基本的Weex知识就是这些，具体使用方法请参照官方文档和demo。<br>下篇开始讲解weex源码，未使用过weex的同学建议先尝试使用weex。</p>
 
       
     </div>
