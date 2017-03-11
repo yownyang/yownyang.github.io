@@ -476,28 +476,34 @@
 <p>Weex</p>
 </blockquote>
 <ul>
-<li>基于RN，优于RN</li>
-<li>js语法，Native体验</li>
-<li>iOS/Android从写UI的噩梦脱离，专注于内在</li>
-<li>文档稍烂</li>
+<li>与RN相同原理，某些方面优于RN</li>
+<li>js语法，比Native体验稍差，比hybrid app体验好太多</li>
+<li>js一端代码，三端使用</li>
+<li>iOS/Android脱离写UI的噩梦</li>
+<li>文档不够完善</li>
 </ul>
 <blockquote>
 <p>Weex原理</p>
 </blockquote>
-<ul>
-<li>web：web端的js—&gt;Weex的中间层处理—&gt;调用Native控件—&gt;UI Render</li>
-<li>Native：Native—&gt;JavaScriptCore(apple提供的一个js与OC交互的Framework)—&gt;js语法执行—&gt;web端接收处理</li>
-</ul>
+<p><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png" alt=""></p>
 <blockquote>
 <p>Weex使用</p>
 </blockquote>
 <ul>
-<li>Component: 自定义控件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要，注意WXComponent</li>
-<li>handler: js调用Native，Native返回值。weex官方定义了常用的部分，如图片下载返回给js使用。如果需要自定义，注意WXModuleProtocol</li>
-<li>module：js调用Native，Native无返回值。这个基本用到就是自定义，同样注意注意WXModuleProtocol</li>
-<li>上述三种均需要在调用完<code>[WXSDKEngine initSDKEnvironment]</code>之后进行注册</li>
+<li>首先，在<code>AppDelegate</code>中调用<code>[WXSDKEngine initSDKEnvironment]</code>进行注册<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexInit.png" alt=""></li>
+<li>其次，在需要使用的ViewController中定义一个<code>WXSDKInstance</code>实例和UI个<code>UIView</code>实例<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexProperty.png" alt=""></li>
+<li>紧接着，初始化<code>WXSDKInstance</code>实例，设置它的viewController、frame属性，实现它的生命周期<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexImp.png" alt=""></li>
+<li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦😯<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRender.png" alt=""></li>
 </ul>
-<p>基本的Weex知识就是这些，具体使用方法请参照官方文档和demo<a href="https://github.com/alibaba/weex" target="_blank" rel="external">链接</a>。<br>下篇开始讲解weex源码，未使用过weex的同学建议先尝试使用weex。</p>
+<blockquote>
+<p> Weex的自定义</p>
+</blockquote>
+<ul>
+<li>Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承<code>WXComponent</code>，滑动组件继承<code>WXScrollerComponent</code></li>
+<li>handler: js调用Native，Native返回一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载返回给js使用。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
+<li>module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议<code>WXModuleProtocol</code>，需要自定义Method，如果需要返回值使用<code>WXModuleCallback</code>返回</li>
+</ul>
+<p>基本的Weex知识就是这些，具体使用方法请参照官方文档和demo<a href="https://github.com/alibaba/weex" target="_blank" rel="external">链接</a>。<br>下篇开始讲解weex源码，未使用过weex的建议先尝试使用weex。</p>
 
           
         
