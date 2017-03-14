@@ -471,15 +471,13 @@
         
           
             <p>上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0</p>
-<blockquote>
-<p>Weex文件夹</p>
-</blockquote>
-<pre><code>*最不重要的文件夹：Controller、Debug、Handler
+<h3 id="Weex文件夹"><a href="#Weex文件夹" class="headerlink" title="Weex文件夹"></a>Weex文件夹</h3><pre><code>*最不重要的文件夹：Controller、Debug、Handler
 *不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
 *稍微重要的文件夹：Component、Module、Protocol
 *重要的文件夹：Display、Events、Layout、View
 *最重要的文件夹：Bridge、Engine、Manager、Model
-</code></pre><p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
+</code></pre><blockquote>
+<p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
 <p>Debug：一个调试类，酱油；</p>
 <p>Handler：两个类实现了两个Weex的Protocol，酱油；</p>
 <p>Loader：一个类是Network的回调实现，一个类是WebSocket的回调。</p>
@@ -498,6 +496,7 @@
 <p>Engine：Weex的入口，用于初始化Env，注册Componet、Module、Handler，重载等</p>
 <p>Model：WXComponent是Componet的根类，WXSDKInstance类似Native的Controller，拥有自身的生命周期，以单链表形式存储的父WXSDKInstance实例，自身的view，render等。</p>
 <p>Manager：Weex中各种管理的类</p>
+</blockquote>
 
           
         

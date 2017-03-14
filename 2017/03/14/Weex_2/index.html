@@ -85,36 +85,27 @@
 
 
 <meta name="description" content="上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0
-
-Weex文件夹
-
-*最不重要的文件夹：Controller、Debug、Handler
+Weex文件夹*最不重要的文件夹：Controller、Debug、Handler
 *不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
 *稍微重要的文件夹：Component、Module、Protocol
-*重要的文件夹：Display、Events">
+*重要的文件夹：Display、Events、La">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS-Weex源码文件夹的解释">
 <meta property="og:url" content="http://yoursite.com/2017/03/14/Weex_2/index.html">
 <meta property="og:site_name" content="静默的程序人生">
 <meta property="og:description" content="上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0
-
-Weex文件夹
-
-*最不重要的文件夹：Controller、Debug、Handler
+Weex文件夹*最不重要的文件夹：Controller、Debug、Handler
 *不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
 *稍微重要的文件夹：Component、Module、Protocol
-*重要的文件夹：Display、Events">
-<meta property="og:updated_time" content="2017-03-14T11:34:26.000Z">
+*重要的文件夹：Display、Events、La">
+<meta property="og:updated_time" content="2017-03-14T11:42:31.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex源码文件夹的解释">
 <meta name="twitter:description" content="上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0
-
-Weex文件夹
-
-*最不重要的文件夹：Controller、Debug、Handler
+Weex文件夹*最不重要的文件夹：Controller、Debug、Handler
 *不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
 *稍微重要的文件夹：Component、Module、Protocol
-*重要的文件夹：Display、Events">
+*重要的文件夹：Display、Events、La">
 
 
 
@@ -351,15 +342,13 @@ Weex文件夹
 
       
         <p>上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0</p>
-<blockquote>
-<p>Weex文件夹</p>
-</blockquote>
-<pre><code>*最不重要的文件夹：Controller、Debug、Handler
+<h3 id="Weex文件夹"><a href="#Weex文件夹" class="headerlink" title="Weex文件夹"></a>Weex文件夹</h3><pre><code>*最不重要的文件夹：Controller、Debug、Handler
 *不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
 *稍微重要的文件夹：Component、Module、Protocol
 *重要的文件夹：Display、Events、Layout、View
 *最重要的文件夹：Bridge、Engine、Manager、Model
-</code></pre><p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
+</code></pre><blockquote>
+<p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
 <p>Debug：一个调试类，酱油；</p>
 <p>Handler：两个类实现了两个Weex的Protocol，酱油；</p>
 <p>Loader：一个类是Network的回调实现，一个类是WebSocket的回调。</p>
@@ -378,6 +367,7 @@ Weex文件夹
 <p>Engine：Weex的入口，用于初始化Env，注册Componet、Module、Handler，重载等</p>
 <p>Model：WXComponent是Componet的根类，WXSDKInstance类似Native的Controller，拥有自身的生命周期，以单链表形式存储的父WXSDKInstance实例，自身的view，render等。</p>
 <p>Manager：Weex中各种管理的类</p>
+</blockquote>
 
       
     </div>
@@ -463,8 +453,17 @@ Weex文件夹
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.png"
@@ -510,6 +509,22 @@ Weex文件夹
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Weex文件夹"><span class="nav-number">1.</span> <span class="nav-text">Weex文件夹</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
     </div>
