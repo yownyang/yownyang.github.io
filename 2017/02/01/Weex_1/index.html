@@ -85,75 +85,51 @@
 
 
 <meta name="description" content="Weex
-
-
 与RN相同原理，某些方面优于RN
 js语法，比Native体验稍差，比hybrid app体验好太多
 js一端代码，三端使用
 iOS/Android脱离写UI的噩梦
 文档不够完善
 
-
 Weex原理
-
-
-
 Weex使用
-
-
 首先，在AppDelegate中调用[WXSDKEngine initSDKEnvironment]进行注册
-其次，在需要使用的ViewController中定义">
+其次，在需要使用的ViewController中定义一个WXSDKIn">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS-Weex的简单使用">
 <meta property="og:url" content="http://yoursite.com/2017/02/01/Weex_1/index.html">
 <meta property="og:site_name" content="静默的程序人生">
 <meta property="og:description" content="Weex
-
-
 与RN相同原理，某些方面优于RN
 js语法，比Native体验稍差，比hybrid app体验好太多
 js一端代码，三端使用
 iOS/Android脱离写UI的噩梦
 文档不够完善
 
-
 Weex原理
-
-
-
 Weex使用
-
-
 首先，在AppDelegate中调用[WXSDKEngine initSDKEnvironment]进行注册
-其次，在需要使用的ViewController中定义">
+其次，在需要使用的ViewController中定义一个WXSDKIn">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexInit.png">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexProperty.png">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexImp.png">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRender.png">
 <meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRegist.png">
-<meta property="og:updated_time" content="2017-03-14T11:24:25.000Z">
+<meta property="og:updated_time" content="2017-03-14T11:39:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex的简单使用">
 <meta name="twitter:description" content="Weex
-
-
 与RN相同原理，某些方面优于RN
 js语法，比Native体验稍差，比hybrid app体验好太多
 js一端代码，三端使用
 iOS/Android脱离写UI的噩梦
 文档不够完善
 
-
 Weex原理
-
-
-
 Weex使用
-
-
 首先，在AppDelegate中调用[WXSDKEngine initSDKEnvironment]进行注册
-其次，在需要使用的ViewController中定义">
+其次，在需要使用的ViewController中定义一个WXSDKIn">
 <meta name="twitter:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png">
 
 
@@ -390,33 +366,21 @@ Weex使用
       
 
       
-        <blockquote>
-<p>Weex</p>
-</blockquote>
-<ul>
+        <h3 id="Weex"><a href="#Weex" class="headerlink" title="Weex"></a>Weex</h3><ul>
 <li>与RN相同原理，某些方面优于RN</li>
 <li>js语法，比Native体验稍差，比hybrid app体验好太多</li>
 <li>js一端代码，三端使用</li>
 <li>iOS/Android脱离写UI的噩梦</li>
 <li>文档不够完善</li>
 </ul>
-<blockquote>
-<p>Weex原理</p>
-</blockquote>
-<p><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png" alt=""></p>
-<blockquote>
-<p>Weex使用</p>
-</blockquote>
-<ul>
+<h3 id="Weex原理"><a href="#Weex原理" class="headerlink" title="Weex原理"></a>Weex原理</h3><p><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png" alt=""></p>
+<h3 id="Weex使用"><a href="#Weex使用" class="headerlink" title="Weex使用"></a>Weex使用</h3><ul>
 <li>首先，在<code>AppDelegate</code>中调用<code>[WXSDKEngine initSDKEnvironment]</code>进行注册<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexInit.png" alt=""></li>
 <li>其次，在需要使用的ViewController中定义一个<code>WXSDKInstance</code>实例和UI个<code>UIView</code>实例<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexProperty.png" alt=""></li>
 <li>紧接着，初始化<code>WXSDKInstance</code>实例，设置它的viewController、frame属性，实现它的生命周期<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexImp.png" alt=""></li>
 <li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦😯<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRender.png" alt=""></li>
 </ul>
-<blockquote>
-<p> Weex的自定义</p>
-</blockquote>
-<ul>
+<h3 id="Weex的自定义"><a href="#Weex的自定义" class="headerlink" title="Weex的自定义"></a>Weex的自定义</h3><ul>
 <li>Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承<code>WXComponent</code>，滑动组件继承<code>WXScrollerComponent</code></li>
 <li>handler: Native提供一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
 <li>module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议<code>WXModuleProtocol</code>，需要自定义Method，如果需要返回值使用<code>WXModuleCallback</code>返回</li>
@@ -504,8 +468,17 @@ Weex使用
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.png"
@@ -551,6 +524,22 @@ Weex使用
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Weex"><span class="nav-number">1.</span> <span class="nav-text">Weex</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Weex原理"><span class="nav-number">2.</span> <span class="nav-text">Weex原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Weex使用"><span class="nav-number">3.</span> <span class="nav-text">Weex使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Weex的自定义"><span class="nav-number">4.</span> <span class="nav-text">Weex的自定义</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
     </div>
