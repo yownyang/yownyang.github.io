@@ -84,16 +84,37 @@
 
 
 
-<meta name="description" content="《iOS7应用开发技术详解》。在朋友那看到的一本书，花了两天时间把这本书翻了一遍，感觉适合有一些编程概念的人看。其次，这本书某些知识点对于当下过于古老，如14.2手势事件、11.3.5的UIViewAutoresizing等，我也不太清楚这本书是否有新版。此外，如果未用到CoreData和Audio/Video的，建议粗略查看16、17章，这两个知识点每个都是一个领域，当然如果就是冲着这知识点去">
+<meta name="description" content="上一篇介绍了Weex在iOS端的用法，这一篇初步讲解下Weex中文件夹的作用，版本是0.10.0
+
+Weex文件夹
+
+*最不重要的文件夹：Controller、Debug、Handler
+*不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
+*稍微重要的文件夹：Component、Module、Protocol
+*重要的文件夹：Display、Even">
 <meta property="og:type" content="article">
-<meta property="og:title" content="iOS-Book">
-<meta property="og:url" content="http://yoursite.com/2017/02/26/ReadBook_iOS/index.html">
+<meta property="og:title" content="iOS-Weex源码文件夹的解释">
+<meta property="og:url" content="http://yoursite.com/2017/03/14/Weex_2/index.html">
 <meta property="og:site_name" content="静默的程序人生">
-<meta property="og:description" content="《iOS7应用开发技术详解》。在朋友那看到的一本书，花了两天时间把这本书翻了一遍，感觉适合有一些编程概念的人看。其次，这本书某些知识点对于当下过于古老，如14.2手势事件、11.3.5的UIViewAutoresizing等，我也不太清楚这本书是否有新版。此外，如果未用到CoreData和Audio/Video的，建议粗略查看16、17章，这两个知识点每个都是一个领域，当然如果就是冲着这知识点去">
-<meta property="og:updated_time" content="2017-02-26T11:40:59.000Z">
+<meta property="og:description" content="上一篇介绍了Weex在iOS端的用法，这一篇初步讲解下Weex中文件夹的作用，版本是0.10.0
+
+Weex文件夹
+
+*最不重要的文件夹：Controller、Debug、Handler
+*不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
+*稍微重要的文件夹：Component、Module、Protocol
+*重要的文件夹：Display、Even">
+<meta property="og:updated_time" content="2017-03-14T11:25:32.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="iOS-Book">
-<meta name="twitter:description" content="《iOS7应用开发技术详解》。在朋友那看到的一本书，花了两天时间把这本书翻了一遍，感觉适合有一些编程概念的人看。其次，这本书某些知识点对于当下过于古老，如14.2手势事件、11.3.5的UIViewAutoresizing等，我也不太清楚这本书是否有新版。此外，如果未用到CoreData和Audio/Video的，建议粗略查看16、17章，这两个知识点每个都是一个领域，当然如果就是冲着这知识点去">
+<meta name="twitter:title" content="iOS-Weex源码文件夹的解释">
+<meta name="twitter:description" content="上一篇介绍了Weex在iOS端的用法，这一篇初步讲解下Weex中文件夹的作用，版本是0.10.0
+
+Weex文件夹
+
+*最不重要的文件夹：Controller、Debug、Handler
+*不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
+*稍微重要的文件夹：Component、Module、Protocol
+*重要的文件夹：Display、Even">
 
 
 
@@ -121,13 +142,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/02/26/ReadBook_iOS/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/03/14/Weex_2/"/>
 
 
 
 
 
-  <title> iOS-Book | 静默的程序人生 </title>
+  <title> iOS-Weex源码文件夹的解释 | 静默的程序人生 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -238,7 +259,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/26/ReadBook_iOS/">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/14/Weex_2/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <meta itemprop="name" content="静默">
@@ -262,7 +283,7 @@
             
             
               
-                iOS-Book
+                iOS-Weex源码文件夹的解释
               
             
           </h1>
@@ -275,8 +296,8 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-26T19:03:08+08:00">
-                2017-02-26
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-03-14T16:01:24+08:00">
+                2017-03-14
               </time>
             
 
@@ -294,8 +315,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/ReadBook/" itemprop="url" rel="index">
-                    <span itemprop="name">ReadBook</span>
+                  <a href="/categories/Weex/" itemprop="url" rel="index">
+                    <span itemprop="name">Weex</span>
                   </a>
                 </span>
 
@@ -329,9 +350,34 @@
       
 
       
-        <ol>
-<li><strong>《iOS7应用开发技术详解》</strong>。在朋友那看到的一本书，花了两天时间把这本书翻了一遍，感觉适合有一些编程概念的人看。其次，这本书某些知识点对于当下过于古老，如<strong>14.2</strong>手势事件、<strong>11.3.5</strong>的<code>UIViewAutoresizing</code>等，我也不太清楚这本书是否有新版。此外，如果未用到CoreData和Audio/Video的，建议粗略查看<strong>16</strong>、<strong>17</strong>章，这两个知识点每个都是一个领域，当然如果就是冲着这知识点去的，那也可以当成基础概念的了解及使用。总的来说，这本书对于修补基础知识空缺或是iOS初学者还是有不错的帮助。</li>
-</ol>
+        <p>上一篇介绍了Weex在iOS端的用法，这一篇初步讲解下Weex中文件夹的作用，版本是0.10.0</p>
+<blockquote>
+<p>Weex文件夹</p>
+</blockquote>
+<pre><code>*最不重要的文件夹：Controller、Debug、Handler
+*不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
+*稍微重要的文件夹：Component、Module、Protocol
+*重要的文件夹：Display、Events、Layout、View
+*最重要的文件夹：Bridge、Engine、Manager、Model
+</code></pre><p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
+<p>Debug：一个调试类，酱油；</p>
+<p>Handler：两个类实现了两个Weex的Protocol，酱油；</p>
+<p>Loader：一个类是Network的回调实现，一个类是WebSocket的回调。</p>
+<p>Monitor：一个监测的类，输出一些信息。</p>
+<p>Network:一个小型的网络请求库</p>
+<p>Utility：一些常用方法的封装</p>
+<p>WebSocket：对SRWebSocket的封装</p>
+<p>Componet：对各种view的封装，如果需要扩展view就跟这个有关</p>
+<p>Module：提供各种方法给Componet使用，Weex封装的都是给Weex定义的Componet用，一般都是自定义Method</p>
+<p>Protocol：提供各种协议，Handler所实现的协议就是这里面的，感觉weex提供的已经够用了。</p>
+<p>Display：WXComponent的展示</p>
+<p>Events：WXComponent的事件</p>
+<p>Layout：WXComponent的布局</p>
+<p>View：WXComponent的View</p>
+<p>Bridge：Weex与NativeJS之间的桥接</p>
+<p>Engine：Weex的入口，用于初始化Env，注册Componet、Module、Handler，重载等</p>
+<p>Model：WXComponent是Componet的根类，WXSDKInstance类似Native的Controller，拥有自身的生命周期，以单链表形式存储的父WXSDKInstance实例，自身的view，render等。</p>
+<p>Manager：Weex中各种管理的类</p>
 
       
     </div>
@@ -358,8 +404,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/02/01/Weex_1/" rel="next" title="iOS-Weex的简单使用">
-                <i class="fa fa-chevron-left"></i> iOS-Weex的简单使用
+              <a href="/2017/02/26/ReadBook_iOS/" rel="next" title="iOS-Book">
+                <i class="fa fa-chevron-left"></i> iOS-Book
               </a>
             
           </div>
@@ -367,10 +413,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/03/14/Weex_2/" rel="prev" title="iOS-Weex源码文件夹的解释">
-                iOS-Weex源码文件夹的解释 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
