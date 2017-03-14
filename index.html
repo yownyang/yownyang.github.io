@@ -500,8 +500,9 @@
 </blockquote>
 <ul>
 <li>Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承<code>WXComponent</code>，滑动组件继承<code>WXScrollerComponent</code></li>
-<li>handler: js调用Native，Native返回一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载返回给js使用。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
+<li>handler: Native提供一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
 <li>module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议<code>WXModuleProtocol</code>，需要自定义Method，如果需要返回值使用<code>WXModuleCallback</code>返回</li>
+<li>总结：Component、handler、module都需要在使用前进行注册，一般都是在AppDelegate中，如下图：<br><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRegist.png" alt=""></li>
 </ul>
 <p>基本的Weex知识就是这些，具体使用方法请参照官方文档和demo<a href="https://github.com/alibaba/weex" target="_blank" rel="external">链接</a>。<br>下篇开始讲解weex源码，未使用过weex的建议先尝试使用weex。</p>
 
