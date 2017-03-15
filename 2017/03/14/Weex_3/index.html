@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/03/14/Weex_3/index.html">
 <meta property="og:site_name" content="静默的程序人生">
 <meta property="og:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
-<meta property="og:updated_time" content="2017-03-15T11:26:56.000Z">
+<meta property="og:updated_time" content="2017-03-15T11:32:27.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex源码解析">
 <meta name="twitter:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
@@ -363,8 +363,8 @@
 <ul>
 <li>WXHandlerFactory：单例类，通过字典存储协议对象，将协议的字符串作为key存储</li>
 </ul>
-<p>注册Handler，这个不需要传给weex，因为就是我们Native端进行掉用。所以只需要使用WXHandlerFactory操作就行了。</p>
-<h4 id="ExecuteJs"><a href="#ExecuteJs" class="headerlink" title="ExecuteJs"></a>ExecuteJs</h4><p>最后调用<code>[[WXSDKManager bridgeMgr] executeJsFramework:script];</code>执行js代码</p>
+<p>注册Handler，这个不需要传给weex，因为就是我们Native端进行调用。所以只需要使用WXHandlerFactory操作就行了。</p>
+<h4 id="ExecuteJs"><a href="#ExecuteJs" class="headerlink" title="ExecuteJs"></a>ExecuteJs</h4><p>最后调用<code>[[WXSDKManager bridgeMgr] executeJsFramework:script];</code>执行js代码。这一块的知识点是Weex与js的交互，所以需要了解下面几个类，并且对OC中的JavaScriptCore框架有所了解。</p>
 <p>首先介绍几个类：</p>
 <ul>
 <li>WXSDKManager：单例类，通过一个字典存储<code>WXSDKInstance</code>实例，key是一个唯一值；一个<code>WXBridgeManager</code>实例</li>
