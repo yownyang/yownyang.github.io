@@ -334,10 +334,14 @@
 
       
         
-          
-            <p>上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0</p>
-
-          
+          <p>上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/03/14/Weex_3/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -469,36 +473,14 @@
 
       
         
-          
-            <p>上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0</p>
-<h3 id="Weex文件夹"><a href="#Weex文件夹" class="headerlink" title="Weex文件夹"></a>Weex文件夹</h3><pre><code>*最不重要的文件夹：Controller、Debug、Handler
-*不重要的文件夹：Loader、Monitor、Network、Utility、WebSocket
-*稍微重要的文件夹：Component、Module、Protocol
-*重要的文件夹：Display、Events、Layout、View
-*最重要的文件夹：Bridge、Engine、Manager、Model
-</code></pre><blockquote>
-<p>Controller: 一个继承UIViewController的类，一个继承UINavigationController.你完全用不到，酱油；</p>
-<p>Debug：一个调试类，酱油；</p>
-<p>Handler：两个类实现了两个Weex的Protocol，酱油；</p>
-<p>Loader：一个类是Network的回调实现，一个类是WebSocket的回调。</p>
-<p>Monitor：一个监测的类，输出一些信息。</p>
-<p>Network:一个小型的网络请求库</p>
-<p>Utility：一些常用方法的封装</p>
-<p>WebSocket：对SRWebSocket的封装</p>
-<p>Componet：对各种view的封装，如果需要扩展view就跟这个有关</p>
-<p>Module：提供各种方法给Componet使用，Weex封装的都是给Weex定义的Componet用，一般都是自定义Method</p>
-<p>Protocol：提供各种协议，Handler所实现的协议就是这里面的，感觉weex提供的已经够用了。</p>
-<p>Display：WXComponent的展示</p>
-<p>Events：WXComponent的事件</p>
-<p>Layout：WXComponent的布局</p>
-<p>View：WXComponent的View</p>
-<p>Bridge：Weex与NativeJS之间的桥接</p>
-<p>Engine：Weex的入口，用于初始化Env，注册Componet、Module、Handler，重载等</p>
-<p>Model：WXComponent是Componet的根类，WXSDKInstance类似Native的Controller，拥有自身的生命周期，以单链表形式存储的父WXSDKInstance实例，自身的view，render等。</p>
-<p>Manager：Weex中各种管理的类</p>
-</blockquote>
-
-          
+          <p>上一篇介绍了Weex在iOS端的用法，这一篇介绍下Weex中文件夹的作用，版本是0.10.0</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/03/14/Weex_2/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -631,7 +613,8 @@
       
         
           
-            <ol>
+            <a id="more"></a>
+<ol>
 <li><strong>《iOS7应用开发技术详解》</strong>。在朋友那看到的一本书，花了两天时间把这本书翻了一遍，感觉适合有一些编程概念的人看。其次，这本书某些知识点对于当下过于古老，如<strong>14.2</strong>手势事件、<strong>11.3.5</strong>的<code>UIViewAutoresizing</code>等，我也不太清楚这本书是否有新版。此外，如果未用到CoreData和Audio/Video的，建议粗略查看<strong>16</strong>、<strong>17</strong>章，这两个知识点每个都是一个领域，当然如果就是冲着这知识点去的，那也可以当成基础概念的了解及使用。总的来说，这本书对于修补基础知识空缺或是iOS初学者还是有不错的帮助。</li>
 </ol>
 
@@ -767,30 +750,14 @@
 
       
         
-          
-            <h3 id="Weex"><a href="#Weex" class="headerlink" title="Weex"></a>Weex</h3><ul>
-<li>与RN相同原理，某些方面优于RN</li>
-<li>js语法，比Native体验稍差，比hybrid app体验好太多</li>
-<li>js一端代码，三端使用</li>
-<li>iOS/Android脱离写UI的噩梦</li>
-<li>文档不够完善</li>
-</ul>
-<h3 id="Weex原理"><a href="#Weex原理" class="headerlink" title="Weex原理"></a>Weex原理</h3><p><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexTree.png" alt=""></p>
-<h3 id="Weex使用"><a href="#Weex使用" class="headerlink" title="Weex使用"></a>Weex使用</h3><ul>
-<li>首先，在<code>AppDelegate</code>中调用<code>[WXSDKEngine initSDKEnvironment]</code>进行注册<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexInit.png" alt=""></li>
-<li>其次，在需要使用的ViewController中定义一个<code>WXSDKInstance</code>实例和UI个<code>UIView</code>实例<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexProperty.png" alt=""></li>
-<li>紧接着，初始化<code>WXSDKInstance</code>实例，设置它的viewController、frame属性，实现它的生命周期<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexImp.png" alt=""></li>
-<li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦😯<img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRender.png" alt=""></li>
-</ul>
-<h3 id="Weex的自定义"><a href="#Weex的自定义" class="headerlink" title="Weex的自定义"></a>Weex的自定义</h3><ul>
-<li>Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承<code>WXComponent</code>，滑动组件继承<code>WXScrollerComponent</code></li>
-<li>handler: Native提供一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
-<li>module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议<code>WXModuleProtocol</code>，需要自定义Method，如果需要返回值使用<code>WXModuleCallback</code>返回</li>
-<li>总结：Component、handler、module都需要在使用前进行注册，一般都是在AppDelegate中，如下图：<br><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexRegist.png" alt=""></li>
-</ul>
-<p>基本的Weex知识就是这些，具体使用方法请参照官方文档和demo<a href="https://github.com/alibaba/weex" target="_blank" rel="external">链接</a>。<br>下篇开始讲解weex源码，未使用过weex的建议先尝试使用weex。</p>
-
-          
+          <p>本篇主要讲解一下Weex的大概原理以及简单的使用</p>
+          <!--noindex-->
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/02/01/Weex_1/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
