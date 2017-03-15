@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/03/14/Weex_3/index.html">
 <meta property="og:site_name" content="静默的程序人生">
 <meta property="og:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
-<meta property="og:updated_time" content="2017-03-15T03:37:08.000Z">
+<meta property="og:updated_time" content="2017-03-15T07:02:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex源码解析">
 <meta name="twitter:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
@@ -331,6 +331,17 @@
       
         <p>上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0</p>
 <a id="more"></a>
+<h3 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h3><p>学习一个开源库，最好是知其思想，找其入口，学其核心。大致思想在第一篇，核心文件夹的分类在第二篇，这一篇就从其入口文件开始学习。</p>
+<p>WeexDemo的入口是<code>[WXSDKEngine initSDKEnvironment];</code>。这个Method的主要代码，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">NSString *filePath = [[NSBundle bundleForClass:self] pathForResource:@&quot;main&quot; ofType:@&quot;js&quot;];</div><div class="line">NSString *script = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];</div><div class="line">[WXSDKEngine initSDKEnvironment:script];</div></pre></td></tr></table></figure>
+<p>首先，读取一个叫做main.js的文件内容，然后将其内容作为<code>[WXSDKEngine initSDKEnvironment:script]</code>初始化的参数。<br>我们继续来看这个method的代码，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">if (!script || script.length &lt;= 0) &#123;</div><div class="line">        WX_MONITOR_FAIL(WXMTJSFramework, WX_ERR_JSFRAMEWORK_LOAD, @&quot;framework loading is failure!&quot;);</div><div class="line">        return;</div><div class="line">&#125;</div><div class="line">[self registerDefaults];</div><div class="line">[[WXSDKManager bridgeMgr] executeJsFramework:script];</div></pre></td></tr></table></figure>
+<h3 id="注册和执行"><a href="#注册和执行" class="headerlink" title="注册和执行"></a>注册和执行</h3><h4 id="Register"><a href="#Register" class="headerlink" title="Register"></a>Register</h4><p>首先，是对传递进来的js代码做判断，其次调用了一个<code>registerDefaults</code>的method，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">static dispatch_once_t onceToken;</div><div class="line">dispatch_once(&amp;onceToken, ^&#123;</div><div class="line">    [self _registerDefaultComponents];</div><div class="line">    [self _registerDefaultModules];</div><div class="line">    [self _registerDefaultHandlers];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>这个method使用了单例模式，对Weex定义的Component、Module、Handler进行注册，注册代码太长，我就不贴了。注册Component，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">+ (void)registerComponent:(NSString *)name withClass:(Class)clazz</div><div class="line">&#123;</div><div class="line">    [self registerComponent:name withClass:clazz withProperties: @&#123;@&quot;append&quot;:@&quot;tree&quot;&#125;];</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (void)registerComponent:(NSString *)name withClass:(Class)clazz withProperties:(NSDictionary *)properties</div><div class="line">&#123;</div><div class="line">    if (!name || !clazz) &#123;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    WXAssert(name &amp;&amp; clazz, @&quot;Fail to register the component, please check if the parameters are correct ！&quot;);</div><div class="line">    </div><div class="line">    [WXComponentFactory registerComponent:name withClass:clazz withPros:properties];</div><div class="line">    NSMutableDictionary *dict = [WXComponentFactory componentMethodMapsWithName:name];</div><div class="line">    dict[@&quot;type&quot;] = name;</div><div class="line">    if (properties) &#123;</div><div class="line">        NSMutableDictionary *props = [properties mutableCopy];</div><div class="line">        if ([dict[@&quot;methods&quot;] count]) &#123;</div><div class="line">            [props addEntriesFromDictionary:dict];</div><div class="line">        &#125;</div><div class="line">        [[WXSDKManager bridgeMgr] registerComponents:@[props]];</div><div class="line">    &#125; else &#123;</div><div class="line">        [[WXSDKManager bridgeMgr] registerComponents:@[dict]];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>第一个method中比较让人迷惑的也就是Properties中的参数了吧，这个其实是vue的渲染模式。<code>@&quot;append&quot;:@&quot;tree&quot;</code>代表是整个vue结点包括子结点生成完之后才会一次性渲染到屏幕，<code>@&quot;append&quot;:@&quot;node&quot;</code>代表是先渲染自身然后再渲染子节点。第二个method中</p>
+<h4 id="ExecuteJs"><a href="#ExecuteJs" class="headerlink" title="ExecuteJs"></a>ExecuteJs</h4><p>最后调用了WXBridgeManager实例执行js代码。</p>
 
       
     </div>
@@ -412,8 +423,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.png"
@@ -459,6 +479,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#入口"><span class="nav-number">1.</span> <span class="nav-text">入口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注册和执行"><span class="nav-number">2.</span> <span class="nav-text">注册和执行</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Register"><span class="nav-number">2.1.</span> <span class="nav-text">Register</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ExecuteJs"><span class="nav-number">2.2.</span> <span class="nav-text">ExecuteJs</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
     </div>
