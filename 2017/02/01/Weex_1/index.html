@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="本篇主要讲解一下Weex的大概原理以及简单的使用">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/Weex/WeexTree.png">
-<meta property="og:updated_time" content="2017-03-24T10:27:00.000Z">
+<meta property="og:updated_time" content="2017-03-24T10:28:54.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex的简单使用">
 <meta name="twitter:description" content="本篇主要讲解一下Weex的大概原理以及简单的使用">
@@ -354,9 +354,9 @@
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">_instance = [[WXSDKInstance alloc] init];</div><div class="line">_instance.viewController = self;</div><div class="line">_instance.frame = [UIScreen mainScreen].bounds;</div><div class="line">    </div><div class="line">__weak typeof(self) weakSelf = self;</div><div class="line">_instance.onCreate = ^(UIView *view) &#123;</div><div class="line">    [weakSelf.weexView removeFromSuperview];</div><div class="line">    weakSelf.weexView = view;</div><div class="line">    [weakSelf.view addSubview:weakSelf.weexView];</div><div class="line">&#125;;</div><div class="line">    </div><div class="line">_instance.onFailed = ^(NSError *error) &#123;</div><div class="line">    NSLog(@&quot;failed %@&quot;,error);</div><div class="line">&#125;;</div><div class="line">    </div><div class="line">_instance.renderFinish = ^(UIView *view) &#123;</div><div class="line">    NSLog(@&quot;render finish&quot;);</div><div class="line">&#125;;</div><div class="line">    </div><div class="line">_instance.onRenderProgress = ^(CGRect renderRect) &#123;</div><div class="line">    </div><div class="line">    NSLog(@&quot;renderProgress&quot;);</div><div class="line">&#125;;</div><div class="line">    </div><div class="line">_instance.updateFinish = ^(UIView *view) &#123;</div><div class="line">    NSLog(@&quot;update Finish&quot;);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <ul>
-<li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦</li>
+<li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦😯</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[self.instance renderWithURL:[NSURL URLWithString:renderURL]];</div></pre></td></tr></table></figure>
+<p><code>[self.instance renderWithURL:[NSURL URLWithString:renderURL]];</code></p>
 <h3 id="Weex的自定义"><a href="#Weex的自定义" class="headerlink" title="Weex的自定义"></a>Weex的自定义</h3><ul>
 <li>Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承<code>WXComponent</code>，滑动组件继承<code>WXScrollerComponent</code></li>
 <li>handler: Native提供一个协议。weex官方定义了常用的部分，如<code>WXImgLoaderProtocol</code>图片下载。如果需要自定义，注意需遵守协议<code>WXModuleProtocol</code></li>
