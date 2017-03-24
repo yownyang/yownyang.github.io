@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="本篇主要讲解一下Weex的大概原理以及简单的使用">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/Weex/WeexTree.png">
-<meta property="og:updated_time" content="2017-03-24T08:37:27.000Z">
+<meta property="og:updated_time" content="2017-03-24T08:39:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex的简单使用">
 <meta name="twitter:description" content="本篇主要讲解一下Weex的大概原理以及简单的使用">
@@ -356,7 +356,7 @@
 <ul>
 <li>最后，使用<code>WXSDKInstance</code>实例调用<code>renderWithURL:</code>方法即可。记得在<code>dealloc</code>中释放<code>WXSDKInstance</code>实例哦😯</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[self.instance renderWithURL:[NSURL URLWithString:renderURL]];</div><div class="line">``` </div><div class="line"></div><div class="line">###  Weex的自定义</div><div class="line"></div><div class="line"> - Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承`WXComponent`，滑动组件继承`WXScrollerComponent`</div><div class="line"> - handler: Native提供一个协议。weex官方定义了常用的部分，如`WXImgLoaderProtocol`图片下载。如果需要自定义，注意需遵守协议`WXModuleProtocol`</div><div class="line"> - module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议`WXModuleProtocol`，需要自定义Method，如果需要返回值使用`WXModuleCallback`返回</div><div class="line"> - 总结：Component、handler、module都需要在使用前进行注册，一般都是在AppDelegate中，如下图：</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[self.instance renderWithURL:[NSURL URLWithString:renderURL]];</div><div class="line">``` </div><div class="line"></div><div class="line">###  Weex的自定义</div><div class="line"></div><div class="line"> - Component: Weex组件，weex官方基本把原生的定义过了，所以你基本不需要自定义。如果需要自定义，普通组件继承`WXComponent`，滑动组件继承`WXScrollerComponent`</div><div class="line"> - handler: Native提供一个协议。weex官方定义了常用的部分，如`WXImgLoaderProtocol`图片下载。如果需要自定义，注意需遵守协议`WXModuleProtocol`</div><div class="line"> - module：js调用Native, 返回值可有可无。这个基本用到就是自定义，遵守协议`WXModuleProtocol`，需要自定义Method，如果需要返回值使用`WXModuleCallback`返回</div><div class="line"> - 总结：Component、handler、module都需要在使用前进行注册，一般都是在AppDelegate中，如下：</div></pre></td></tr></table></figure>
 <p>[WXSDKEngine registerModule:@”test” withClass:[WeexCustomModule class]];<br>[WXSDKEngine registerModule:@”user” withClass:[HMBUserModule class]];</p>
 <p>[WXSDKEngine registerHandler:[HMBWeexImageLoader new] withProtocol:@protocol(WXImgLoaderProtocol)];<br>```<br>基本的Weex知识就是这些，具体使用方法请参照<a href="https://weex.apache.org/cn/" target="_blank" rel="external">官方文档</a>和demo<a href="https://github.com/alibaba/weex" target="_blank" rel="external">链接</a>。<br>下篇开始讲解weex源码，未使用过weex的建议先尝试使用weex。</p>
 
