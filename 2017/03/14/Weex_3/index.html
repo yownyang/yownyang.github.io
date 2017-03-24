@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="静默的程序人生, iOS, Weex" />
+  <meta name="keywords" content="YownYang, iOS, Weex, YownYang's blog" />
 
 
 
@@ -90,12 +90,12 @@
 <meta property="og:url" content="http://yoursite.com/2017/03/14/Weex_3/index.html">
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
-<meta property="og:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexCallJS.png">
-<meta property="og:updated_time" content="2017-03-16T10:11:28.000Z">
+<meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/Weex/WeexCallJS.png">
+<meta property="og:updated_time" content="2017-03-24T04:18:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS-Weex源码解析">
 <meta name="twitter:description" content="上一篇介绍了Weex中文件夹的作用以及重要性，这一篇将正式开始Weex源码的解析，版本是0.10.0">
-<meta name="twitter:image" content="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexCallJS.png">
+<meta name="twitter:image" content="https://github.com/yownyang/Resource/raw/master/Image/Weex/WeexCallJS.png">
 
 
 
@@ -243,7 +243,7 @@
   <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/14/Weex_3/">
 
   <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <meta itemprop="name" content="静默">
+    <meta itemprop="name" content="YownYang">
     <meta itemprop="description" content="">
     <meta itemprop="image" content="/uploads/avatar.png">
   </span>
@@ -395,7 +395,7 @@
 <p>另一个要注意的点就是这里，JavaScriptCore会在<code>exceptionHandler</code>中抛出异常，为了我们能在这个时候做点什么，所以我们赋值给他一个blcok。并且如果你要在block中使用context对象，要么将其作为参数传递进block，要么使用<code>[JSContext currentContext]</code>获取当前的context。如果直接引用外部的context会造成循环饮用。</p>
 <h5 id="invokeMethod"><a href="#invokeMethod" class="headerlink" title="invokeMethod"></a>invokeMethod</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">JSContext *context = [[JSContext alloc] init];</div><div class="line">[context evaluateScript:@&quot;function add(a, b) &#123; return a + b; &#125;&quot;];    </div><div class="line">JSValue *sum = [[context globalObject] invokeMethod:@&quot;add&quot; withArguments:@[@(3), @(4)]];</div><div class="line">NSLog(@&quot;%@&quot;, sum); 输出7</div></pre></td></tr></table></figure>
 <p>初始化一个context，将一个名为add的method加入到context中，使用js全局变量调用add方法，并传入参数3，4，输出结果为7。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>上面讲了Weex注册的基本逻辑和JavaScriptCore框架的一些基本使用，我想应该对理解Weex框架的运作原理有帮助的。其实剩下的源码还有很多，比如向js端发送消息等，但其实质逃不过上面的流程，所以我认为也没有往下写的必要了。最后，为大家整理下类的调用顺序。<br><img src="https://github.com/jizhidejingmo/Resource/raw/master/Image/Weex/WeexCallJS.png" alt=""></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>上面讲了Weex注册的基本逻辑和JavaScriptCore框架的一些基本使用，我想应该对理解Weex框架的运作原理有帮助的。其实剩下的源码还有很多，比如向js端发送消息等，但其实质逃不过上面的流程，所以我认为也没有往下写的必要了。最后，为大家整理下类的调用顺序。<br><img src="https://github.com/yownyang/Resource/raw/master/Image/Weex/WeexCallJS.png" alt=""></p>
 
       
     </div>
@@ -491,9 +491,9 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.png"
-               alt="静默" />
-          <p class="site-author-name" itemprop="name">静默</p>
-          <p class="site-description motion-element" itemprop="description">一个Demo工程师</p>
+               alt="YownYang" />
+          <p class="site-author-name" itemprop="name">YownYang</p>
+          <p class="site-description motion-element" itemprop="description">匆匆那年 匆匆那天</p>
         </div>
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
@@ -568,7 +568,7 @@
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">静默</span>
+  <span class="author" itemprop="copyrightHolder">YownYang</span>
 </div>
 
 
