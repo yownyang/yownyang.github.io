@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-04-29T06:48:05.000Z</updated>
+  <updated>2017-04-29T09:44:13.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/04/29/Accustoming%20Yourself%20to%20Objective-C/"/>
     <id>http://yoursite.com/2017/04/29/Accustoming Yourself to Objective-C/</id>
     <published>2017-04-29T06:48:05.000Z</published>
-    <updated>2017-04-29T06:48:05.000Z</updated>
+    <updated>2017-04-29T09:44:13.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第一章</p>
 <a id="more"></a>
@@ -51,6 +51,33 @@
 <p><strong>小结</strong></p>
 <p>Objective-C是C的超集，添加了面向对象的功能。<br>Objective-C使用消息机制和动态绑定，意思是一个对象的类型是在运行时确定的。Objective-C是运行时而不是编译时，通过消息决定代码如何运行。</p>
 <p>了解C语言的核心概念将帮助写出更有效的Objective-C代码。特别是你需要理解内存模式和指针。</p>
+<h4 id="减少在头文件中使用import"><a href="#减少在头文件中使用import" class="headerlink" title="减少在头文件中使用import"></a>减少在头文件中使用import</h4><p>Objective-C使用头文件和实现文件就像C和C++一样。当在Objective-C写一个类，标准方法是创建的每个文件名均以类名命名，后缀带有<code>.h</code>的是头文件，带有<code>.m</code>的是实现文件。当你创建一个类时，它看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//	EOCPerson.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interfrace EOCPerson : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, copy) NSString *firstName;</div><div class="line">@property (nonatomic, copy) NSString *lastName;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">// EOCPerson.m</div><div class="line">#import &quot;EOCPerson.h&quot;</div><div class="line"></div><div class="line">@implementation EOCPerson</div><div class="line">// Implementation of methods</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>对所有类来说，导入<code>Foundation.h</code>是必须的，你将在Objective-C中一直使用它。或者你在某个类的父类中导入框架的头文件。例如，你创建一个iOS应用，你通常会创建<code>UIViewController</code>的子类。这些类的头文件将会导入<code>UIKit.h</code>。</p>
+<p>目前来讲，这个类的写法是没问题的。它导入了整个<code>Foundation</code>框架，但是并不需要在意。<code>EOCPerson</code>类继承自<code>Foundation</code>框架中的某一个类，它将会使用框架的一大部分功能。继承自<code>UIViewController</code>的类也是一样，它将会使用<code>UIKit</code>框架的一大部分功能。</p>
+<p>随着时间的推移，你可能创建了一叫做<code>EOCEmployer</code>的新类。然后你决定一个<code>EOCPerson</code>实例持有一个<code>EOCEmployer</code>实例。所以你提前给它加了一个属性：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">//	EOCPerson.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interfrace EOCPerson : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, copy) NSString *firstName;</div><div class="line">@property (nonatomic, copy) NSString *lastName;</div><div class="line">@property (nonatomic, copy) EOCEmployer *employer;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>一个问题出现了，当你编译时发现<code>EOCEmployer</code>是缺失的。这个时候编译器一定会提示你在<code>EOCPerson.h</code>中导入<code>EOCEmployer.h</code>。通常你是在<code>EOCPerson.h</code>顶部加入导入的方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#import &quot;EOCEmployer.h&quot;</div></pre></td></tr></table></figure>
+<p>这将使他正常编译，但这是一个坏的习惯。因为编译<code>EOCPerson</code>不需要知道<code>EOCEmployer</code>的详细信息。仅需要知道有一个叫做<code>EOCEmployer</code>的类存在即可。幸运的是，有一个办法可以告诉编译器这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@class EOCEmployer;</div></pre></td></tr></table></figure>
+<p>这叫做向前声明这个类。这样<code>EOCPerson</code>的头文件看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">//	EOCPerson.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@class EOCEmployer;</div><div class="line"></div><div class="line">@interfrace EOCPerson : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, copy) NSString *firstName;</div><div class="line">@property (nonatomic, copy) NSString *lastName;</div><div class="line">@property (nonatomic, copy) EOCEmployer *employer;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>当你为了在实现文件中使用它时，你需要知道<code>EOCEmployer</code>的全部信息，你可以在实现文件导入它。所以实现文件看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// EOCPerson.m</div><div class="line">#import &quot;EOCPerson.h&quot;</div><div class="line">#import &quot;EOCEmployer.h&quot;</div><div class="line"></div><div class="line">@implementation EOCPerson</div><div class="line">// Implementation of methods</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>推迟导入是必要的，在需要的时候导入，可以使你限制它的作用域。在例子中，如果<code>EOCEmployer.h</code>是在<code>EOCPerson.h</code>中导入，你最后会有许多重复导入，那毫无疑问是会增加编译时间的。</p>
+<p>使用前向声明会缓解两个类互相引用的问题。考虑下当<code>EOCEmployer</code>有两个方法去添加和移除<code>EOCPerson</code>的实例会发生什么，在头文件像这样定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- (void)addEmployee:(EOCPerson *)person;</div><div class="line">- (void)removeEmployee:(EOCPerson *)person;</div></pre></td></tr></table></figure>
+<p>这时，在相反的情况下处于同样的原因，<code>EOCPerson</code>类需要对编译器可见。可是，通过在别的每个头文件导入它去实现会产生一个”先有鸡还是先有蛋”的问题。当一个头文件被解析时，它导入了别的头文件，而别的头文件也导入了它，那么哪个是第一个导入呢。使用<code>#import</code>而不是<code>#include</code>可以避免这个问题，但是其中有一个类会不能正确编译。如果你不相信我就自己试试喽。</p>
+<p>有时，你需要在一个头文件导入另一个头文件。你一定需要导入你所继承类的头文件。类似的，如果你有任何协议需要去实现它，你将不得不使用完整的定义并且不能使用向前声明。编译器需要知道这个协议的所有定义而不是通过向前声明确定协议的存在。</p>
+<p>例如，假设一个矩形类继承自一个形状类并要实现一个协议用于绘画：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">//	EOCRectangle.h</div><div class="line">#import &quot;EOCShape.h&quot;</div><div class="line">#import &quot;EOCDrawable.h&quot;</div><div class="line"></div><div class="line">@interface EOCRectangle : EOCShape &lt;EOCDrawable&gt;</div><div class="line"></div><div class="line">@property (nonatomic, assign) float width;</div><div class="line">@property (nonatomic, assign) float height;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这个导入是无法避免的。对于这样的协议，放置它们在自己类的头文件应该是谨慎的。如果<code>EOCDrawable</code>协议是一个大的头文件的一部分，你将不得不导入它的所有内容。如前面所描述的一样会产生同样的依赖和额外的编译时间的问题。</p>
+<p>即使如此，也不是所有协议都是这样的。例如，代理协议(看第23节)，需要放置在自己头文件中。在这种情况下，协议的使用场景仅在当它作为委托类的一部分一起定义时。在这种情况下，它最好声明在你的实现文件中，即<code>.m</code>中使用类扩展声明它。这意思是在实现文件中导入包含协议的头文件而不是在头文件中。</p>
+<p>每当在头文件导入文件时，总是问自己这是否是必要的。如果导入可以用向前声明代替，那么使用向前声明。如果导入它为了使用一些属性，实例变量或者实现协议并且可以移动到实现文件中时，那么移动它。那将会尽可能减少编译时间和相互依赖的可能性，可以修复问题或者在公共API中减少你暴漏的代码。</p>
+<p><strong>小结</strong></p>
+<p>总在尽可能深的层次导入头文件。经常在头文件使用向前声明并且在实现文件导入它们。这样做可以尽量避免两个类的相互引用。</p>
+<p>有时，向前声明是不适用的，在声明协议遵循时。在这种情况下，考虑移动协议遵循到类的实现文件中。或者，导入仅有协议定义的头文件。</p>
 ]]></content>
     
     <summary type="html">
