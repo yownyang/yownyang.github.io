@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-04-17T11:32:16.000Z</updated>
+  <updated>2017-04-29T06:48:05.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -14,6 +14,55 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>译《Effective Objective-C 2.0》第一章</title>
+    <link href="http://yoursite.com/2017/04/29/Accustoming%20Yourself%20to%20Objective-C/"/>
+    <id>http://yoursite.com/2017/04/29/Accustoming Yourself to Objective-C/</id>
+    <published>2017-04-29T06:48:05.000Z</published>
+    <updated>2017-04-29T06:48:05.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第一章</p>
+<a id="more"></a>
+<h3 id="第1章-对Objective-C的认识"><a href="#第1章-对Objective-C的认识" class="headerlink" title="第1章:对Objective-C的认识"></a>第1章:对Objective-C的认识</h3><p>Objective-C通过一种完整的新的写法为C语言带来了面向对象的功能。由于Objective-C使用大量的方括号和长的方法名，常被认为是繁琐的、冗长的。它生成的源代码非常易读但是不同于C++或Java的主流开发。</p>
+<p>书写Objective-C代码可以让你快速的学习它但是经常会有许多细节和功能被忽视。类似的，一些功能在尚未完全理解的情况下被滥用，由此写出的代码是难以维护和DEBUG的。本章节讲解Objective-C的基本部分；后续章节讲解关于语言的特定领域和相关的框架。</p>
+<h4 id="第1节-了解Objective-C的本源"><a href="#第1节-了解Objective-C的本源" class="headerlink" title="第1节:了解Objective-C的本源"></a>第1节:了解Objective-C的本源</h4><p>Objective-C同其他面向对象的语言是相似的，例如C++和Java，但是也有许多不同的地方。如果你有别的面向对象语言的经验，你将会理解它许多示例和使用的模式。然而，它的语法仍可能是陌生的因为它使用消息机制而不是函数调用。Objective-C源于Smalltalk，Smalltalk源于消息机制。消息机制与函数调用的不同看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// 	Messaging (Objective-C)</div><div class="line">	Object *obj = [Object new];</div><div class="line">	[obj performWith:parameter1 and:parameter2];</div><div class="line">	</div><div class="line">// 	Function calling (C++)</div><div class="line">	Object *obj = new Object;</div><div class="line">	obj-&gt;perform(parameter1, parameter2);</div></pre></td></tr></table></figure>
+<p>两者的区别在于在消息机制中，是在运行时决定code的行为。而在函数调用中，是在编译时决定code的行为。当多态被引入到函数调用中时，查找它的方式是在运行时通过一个已知的虚拟表中查找。但是在消息机制中，一直是在运行时查找。事实上，编译器根本不在乎接收的对象类型。它也是在运行时查找，通过动态绑定确定类型，在第11节会有更详细的介绍。</p>
+<p>Objective-C在运行时做了更多的工作而不是编译时。<code>runtime</code>包含了所有的数据结构和函数，它确保了Objective-C面向对象功能的正常使用。例如，<code>runtime</code>包含所有内存管理的方法。本质上，<code>runtime</code>是代码的集合，连接你所有代码和你以动态库方式引用的代码。因此，每当<code>runtime</code>更新时，你的应用将会享受到性能提升带来的收益。一门在编译时做更多工作的语言需要重新编译才能受益于性能的提升。</p>
+<p>Objective-C是C的超集，当你写Objective-C代码时，C的所有特性也是可以使用的。因此，书写Objective-C代码实际上需要你理解OC和C的核心概念。尤其是理解C的内存模式将会帮助你理解Objective-C的内存模式以及引用计数的工作原理。这需要理解在Objective-C中一个指针是被用来代表一个对象。当你声明一个变量时，将会持有一个对象的引用，语法是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSString *someString = @&quot;The string&quot;;</div></pre></td></tr></table></figure>
+<p>这种语法大多来源于C，声明一个叫做<code>someString</code>的变量，类型是<code>NSString *</code>。它的意思是这是一个<code>NSString</code>类型的指针。所有的Objective-C对象都必须通过这种方式声明，因为对象的初始化一直在堆上并且绝不会再栈上。像下面这种声明是不合法的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">	NSString stackString;</div><div class="line">//	error:interface type cannot be statically allocated</div></pre></td></tr></table></figure>
+<p><code>someString</code>变量指向某个内存地址，在堆上初始化，包含一个<code>NSString</code>对象。这个意思是创建另一个变量指向同样的内存地址，不是copy，而是产生两个变量指向同一个对象：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">NSString *someString = @&quot;The string&quot;;</div><div class="line">NSString *anotherString = someString;</div></pre></td></tr></table></figure>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%201.1.png" alt=""></p>
+<p><strong>Figure 1.1</strong> 内存布局展示了一个在堆上初始化的NSString实例和两个栈上初始化的变量指向它</p>
+<p>这仅有一个<code>NSString</code>实例，但有两个变量指向同它。这两个变量的类型是<code>NSString *</code>，意思是当前栈上已经初始化了2bit大小的指针(32位下每个指针占4个字节，64位下每个指针占8个字节)。这2bit内存保存了同样的值：<code>NSString</code>实例的内存地址。</p>
+<p>图1.1说明了这个结构。<code>NSString</code>实例存储了表示实际字符串所需要的字节。</p>
+<p>在堆上分配的内存需要程序员管理，而栈上分配的内存是系统管理的，在它们所在的栈弹出时自动清理。</p>
+<p>Objective-C堆上的内存管理是已经抽象的。你不需要使用<code>malloc</code>和<code>free</code>去初始化和释放对象内存。Objective-C的<code>runtime</code>通过一种被称为引用计数的管理机制抽象了它(具体看第29节)。</p>
+<p>有时在Objective-C中你会遇到这种不带有*的声明并且使用栈控件的变量。这些变量不持有Objective-C对象。例如<code>CGRect</code>，来源于<code>CoreGraphics</code>框架：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">CGRect frame;</div><div class="line">frame.origin.x = 0.0f;</div><div class="line">frame.origin.y = 10.0f;</div><div class="line">frame.size.width = 100.0f;</div><div class="line">frame.siez.height = 150.0f;</div></pre></td></tr></table></figure>
+<p><code>CGRect</code>是一个C的结构体，定义是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">struct CGRect &#123;</div><div class="line">	CGRect origin;</div><div class="line">	CGSize size;</div><div class="line">&#125;;</div><div class="line">typedef struct CGRect CGRect;</div></pre></td></tr></table></figure>
+<p>这些类型的结构体被用于整个系统框架，在其中使用Objective-C对象可能会影响性能。创建对象会产生额外开销，而结构体不会，例如初始化和释放堆内存。当保存的数据类型不是对象时，通常会使用一个结构体，如<code>CGRect</code>。</p>
+<p>在开始书写Objective-C之前，我建议你去读C语言的文档并且熟悉它的语法。如果你直接书写Objective-C代码，你可能会找到部分令你困惑的语法。</p>
+<p><strong>小结</strong></p>
+<p>Objective-C是C的超集，添加了面向对象的功能。<br>Objective-C使用消息机制和动态绑定，意思是一个对象的类型是在运行时确定的。Objective-C是运行时而不是编译时，通过消息决定代码如何运行。</p>
+<p>了解C语言的核心概念将帮助写出更有效的Objective-C代码。特别是你需要理解内存模式和指针。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是翻译《Effective Objective-C 2.0》的第一章&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Objective-C" scheme="http://yoursite.com/categories/Objective-C/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>基本内容图解</title>
