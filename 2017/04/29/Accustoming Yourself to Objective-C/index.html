@@ -93,7 +93,7 @@
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="这是翻译《Effective Objective-C 2.0》的第一章：对Objective-C的认识">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%201.1.png">
-<meta property="og:updated_time" content="2017-05-06T07:09:16.000Z">
+<meta property="og:updated_time" content="2017-05-06T15:08:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第一章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第一章：对Objective-C的认识">
@@ -428,7 +428,31 @@
 <p>众所周知Objective-C拥有冗长的语法。这是真的。然而，自从<code>Objective-C 1.0</code>开始，有一个非常简单的办法去创建一个<code>NSString</code>对象。它被称为<strong>String Literal</strong>并且看起来像这样：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSString *someString = @&quot;Effective Objective-C 2.0&quot;;</div></pre></td></tr></table></figure>
 <p>这种类型的语法是不存在的，通常创建一个<code>NSString</code>对象是需要调用<code>alloc</code>方法后，调用<code>init</code>方法的。幸运的是，这种被称作Literal Syntax，在最近的编译器版本中已经支持的了。同样也包括<code>NSNumber、NSArray、NSDictionary</code>的实例。使用Literal Syntax减少了代码大小，并且使代码更易读。</p>
-
+<h4 id="Literal-Numbers"><a href="#Literal-Numbers" class="headerlink" title="Literal Numbers"></a>Literal Numbers</h4><p>有时，你需要在一个对象中包含一个整数，或者浮点数，或者布尔值。你可以通过使用<code>NSNumber</code>实现它，它可以处理一系列的数字类型。使用Literal Number之前，你创建实例时是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSNumber *someNumber = [NSNumber numberWithInt:1];</div></pre></td></tr></table></figure>
+<p>它创建了一个数值，并将值设为1。然而，使用Literal Number使它更简单：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSNumber *someNumber = @1;</div></pre></td></tr></table></figure>
+<p>如你所见，Literal Number是更简洁的。然而好处远远不止这些。这种语法包含所有<code>NSNumber</code>实例可以代表的数据类型。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">NSNumber *intNumber = @1;</div><div class="line">NSNumber *floatNumber = @2.5f;</div><div class="line">NSNumber *doubleNumber = @3.14159;</div><div class="line">NSNumber *boolNumber = @YES;</div><div class="line">NSNumber *charNumber = @&apos;a&apos;;</div></pre></td></tr></table></figure>
+<p>这种Literal Syntax也适用于表达式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">int x = 5;</div><div class="line">float y = 6.32f;</div><div class="line">NSNumber *expressionNumber = @(x * y);</div></pre></td></tr></table></figure>
+<p>使用Literal Syntax对于数值来说是非常有用的。这样做可以使<code>NSNumber</code>对象更简洁明了，因为声明的大部分是值而不是多余的语法。</p>
+<h4 id="Literal-Arrays"><a href="#Literal-Arrays" class="headerlink" title="Literal Arrays"></a>Literal Arrays</h4><p>数组是一个常用的数据结构。使用Literal Syntax之前，你是这样创建一个数组的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSArray *animals = [NSArray arrayWithObjects:@&quot;cat&quot;, @&quot;dog&quot;, @&quot;mouse&quot;, @&quot;badger&quot;, nil];</div></pre></td></tr></table></figure>
+<p>使用Literal Syntax之后，仅需要使用下面的语法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSArray *animals = @[@&quot;cat&quot;, @&quot;dog&quot;, @&quot;mouse&quot;, @&quot;badger&quot;];</div></pre></td></tr></table></figure>
+<p>这已经是一种很简单的语法了，但是它对数组的好处远不止于此。一个常见的操作是根据一个确定的下标从数组中取值。使用Literal Array这也是简单的。通常你会使用<code>objectAtIndex: method:</code>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSString *dog = [animals objectAtIndex:1];</div></pre></td></tr></table></figure>
+<p>而使用Literal Syntax，只需要像下面的做法一样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSString *dog = animals[1];</div></pre></td></tr></table></figure>
+<p>这称作下标取值，就像其他的Literal Syntax一样，它更简洁明了的指出它做了什么。此外，它看起来与别的语言的取值方法非常相似。</p>
+<p>然而，当你使用Literal Syntax创建一个数组时你需要知道一件事情。如果任何的对象为空，会抛出一个异常，因为Literal Syntax仅仅是创建一个数组然后添加方括号中所有元素的<a href="https://www.zhihu.com/question/20651624?sort=created" target="_blank" rel="external">语法糖</a>。这个异常看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">*** Terminating app due to uncaught exception </div><div class="line">&apos;NSInvalidArgumentException&apos;, reason: &apos;*** </div><div class="line">-[__NSPlaceholderArray initWithObjects:count:]: attempt to </div><div class="line">insert nil object from objects[0]&apos;</div></pre></td></tr></table></figure>
+<p>这将导致当使用Literal Syntax时会产生一个常见的问题。下面的代码创建了两个数组，每一个语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">id object1 = /*...*/;</div><div class="line">id object2 = /*...*/;</div><div class="line">id object3 = /*...*/;</div><div class="line">    </div><div class="line">NSArray *arrayA = [NSArray arrayWithObjects:object1, object2, object3, nil];</div><div class="line">NSArray *arrayB = @[object1, object2, object3];</div></pre></td></tr></table></figure>
+<p>现在考虑这样一个场景，当<strong>object1</strong>和<strong>object3</strong>指向一个有效的<code>Objective-C</code>对象，但是<strong>object2</strong>是空的。这literal array，<strong>arrayB</strong>，将会抛出一个异常。然而，<strong>arrayA</strong> 仍将会被创建但只包含<strong>object1</strong>对象。原因是<code>arrayWithObjects:</code>方法添加参数，遇到nil终止，这比预想的结束的早。</p>
+<p>这种微小的不同意味着Literal Synta更加安全。抛出一个异常，可能导致程序结束是更好的，而不是创建一个比预想中元素要少的数组。程序员最可能的错误是往数组中插入一个空的对象，并且异常意味着更容易被发现。</p>
+<h4 id="Literal-Dictionaries"><a href="#Literal-Dictionaries" class="headerlink" title="Literal Dictionaries"></a>Literal Dictionaries</h4>
       
     </div>
 
@@ -615,7 +639,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#了解Objective-C的本源"><span class="nav-number">2.</span> <span class="nav-text">了解Objective-C的本源</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#减少在头文件中使用import"><span class="nav-number">3.</span> <span class="nav-text">减少在头文件中使用import</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">3.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多使用Literal-Syntax少使用与之等价的方法"><span class="nav-number">4.</span> <span class="nav-text">多使用Literal Syntax少使用与之等价的方法</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#了解Objective-C的本源"><span class="nav-number">2.</span> <span class="nav-text">了解Objective-C的本源</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#减少在头文件中使用import"><span class="nav-number">3.</span> <span class="nav-text">减少在头文件中使用import</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">3.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多使用Literal-Syntax少使用与之等价的方法"><span class="nav-number">4.</span> <span class="nav-text">多使用Literal Syntax少使用与之等价的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Literal-Numbers"><span class="nav-number">4.1.</span> <span class="nav-text">Literal Numbers</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Literal-Arrays"><span class="nav-number">4.2.</span> <span class="nav-text">Literal Arrays</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Literal-Dictionaries"><span class="nav-number">4.3.</span> <span class="nav-text">Literal Dictionaries</span></a></li></ol></li></ol></div>
             
 
           </div>
