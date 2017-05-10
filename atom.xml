@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-05-07T10:07:42.000Z</updated>
+  <updated>2017-05-10T11:06:20.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/04/29/Accustoming%20Yourself%20to%20Objective-C/"/>
     <id>http://yoursite.com/2017/04/29/Accustoming Yourself to Objective-C/</id>
     <published>2017-04-29T06:48:05.000Z</published>
-    <updated>2017-05-07T10:07:42.000Z</updated>
+    <updated>2017-05-10T11:06:20.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第一章：对Objective-C的认识</p>
 <a id="more"></a>
@@ -129,6 +129,35 @@
 <h4 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h4><p>使用Literal Syntax去创建字符串，数字，数组，字典。它是比正常的创建对象的语法简洁和清晰地。</p>
 <p>通过下标法访问数组或者字典。</p>
 <p>使用Literal Syntax给数组或者字典插入一个空的值将会产生一个异常。因此，尽量确定它们的值不为空。</p>
+<h3 id="优先使用类型常量，减少使用-define预处理"><a href="#优先使用类型常量，减少使用-define预处理" class="headerlink" title="优先使用类型常量，减少使用#define预处理"></a>优先使用类型常量，减少使用#define预处理</h3><p>在写代码时，你经常想去定义一个常量。例如，一个<code>UIView</code>类出现和消失时它自身的动画。你可能想定义一个常量来代表动画持续的时间。你已经学会了<code>Objective-C</code>和<code>C</code>的基础，所以你决定使用的方法是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#define ANIMATION_DURATION 0.3</div></pre></td></tr></table></figure>
+<p>这是一个预处理指定；每当在你的代码中出现<code>ANIMATION_DURATION</code>字符，就用0.3替代。这看起来就是你想要的，但是这种定义没有类型信息。它就像是声明了一个叫做“duration”的事物意指它的value与时间有关系，但它并不是明确的。并且，它会将所有<code>ANIMATION_DURATION</code>替换掉，如果它声明在头文件中，别的任何导入了这个头文件的类都将被替代。</p>
+<p>为了解决这个问题，你应该使用编译器。有一个比使用预处理更好的办法，去定义一个常量。例如，下面这种定义常量类型为<code>NSTimeInterval</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">static const NSTimeInterval kAnimationDuration = 0.3;</div></pre></td></tr></table></figure>
+<p>注意这种格式，它是有类型信息的，这种用法是好的，因为我们可以清楚地知道常量的定义。它的类型是<code>NSTimeInterval</code>，并且它有助于指出变量的使用。如果你定义了许多常量，它将会帮助以后阅读代码的人。</p>
+<p>也会指出这个变量如何命名的。通常的惯例是在常量前面加上小写字母<code>k</code>（加k的原因据说是constant的首字母读音，或者德语一般写作konstant）并将其放置在实现文件中。对于需要暴露给其它类的常量，通常使用其类名作为前缀。第19节展示了更多的命名标准。</p>
+<p>在哪里定义常量是重要的。有时，使用预处理定义常量是诱人的，但这是一个坏的习惯，特别是命名方式没有遵循标准的时候，它们不会冲突。例如：<code>ANIMATION_DURATION</code>常量定义在头文件是一个坏的命名。它将显示在所有导入了这个头文件的文件中。甚至作为标准的<code>static const</code>也不该出现在头文件中。自从<code>Objective-C</code>不使用命名空间（namespaces），上面的代码将会声明一个叫做<code>kAnimationDuration</code>的全局变量。它的名字前缀应该使用其所作用的类的名字，例如<code>EOCViewClassAnimationDuration</code>。第19节展示了更多的关于使用清晰命名的方案。</p>
+<p>一个不需要暴露给外界的常量，应该在需要使用它的实现文件中定义。例如，如果那个动画持续时间的常量被用在一个<code>UIView</code>的子类，子类在一个iOS应用中，它看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">//EOCAnimatedView.h</div><div class="line">#import &lt;UIKit/UIKit.h&gt;</div><div class="line"></div><div class="line">@interface EOCAnimatedView : UIView</div><div class="line">- (void)animate;</div><div class="line">@end</div><div class="line"></div><div class="line">//EOCAnimatedView.m</div><div class="line">#import &quot;EOCAnimatedView.h&quot;</div><div class="line"></div><div class="line">static const NSTimeInterval kAnimationDuration = 0.3;</div><div class="line"></div><div class="line">@implementation EOCAnimatedView</div><div class="line">- (void)animate &#123;</div><div class="line">    </div><div class="line">    [UIView animateWithDuration:kAnimationDuration</div><div class="line">                     animations:^()&#123;</div><div class="line">                     	//  Perform animations</div><div class="line">                     &#125;];</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>使用<code>static const</code>声明常量是重要的。使用<code>const</code>修饰符代表如果你试图在之后修改值，编译器将会报错。在这种情况下，这种做法是必需的。这个值不应该被改变。<code>static</code>修饰符的意思是其作用范围在定义它的编译单元内。编译器将其接收到的内容编译成一个目标文件，这个目标文件就是编译单元。在<code>Objective-C</code>中，每一个编译单元就是每一个实现文件。所以在前面的例子中，<code>kAnimationDuration</code>将被声明在<code>EOCAnimatedView.m</code>生成的目标文件中。如果变量没有使用<code>static</code>修饰，编译器将会创建一个外部符号给它。如果另一个编译单元也声明了一个相同名字的变量，将会抛出一个类似的错误：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">duplicate symbol _ kAnimationDuration in:</div><div class="line">	EOCAnimatedView.o</div><div class="line">	EOCOtherView.o</div></pre></td></tr></table></figure>
+<p>实际上，当使用<code>static</code>和<code>const</code>声明一个变量时，编译器最终不会创建一个符号，而是使用存在的值去替代变量，就像宏定义一样。谨记，无论如何，显示类型信息的做法是更好的。</p>
+<p>有时，你会想给外部暴漏一个常量。例如，如果你的类使用<code>NSNotificationCenter</code>通知别的类，你可能想这样做。这个功能是一个对象发送通知，另一个对象注册并接收它。通知有一个字符串做名字，并且你可能将其声明为一个外部可见的常量。这样做的意思是可以让任何一个想去注册接收通知的类不需要知道实际的字符名字，而仅使用这个常量。</p>
+<p>这种常量需要出现在全局的符号表中，从而可以在声明它之外的编译单元使用。因此，这些常量需要声明在不同与<code>static const</code>示例的地方。这个变量应该像这样被声明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">// In the header file</div><div class="line">extern NSString *const EOCStringConstant;</div><div class="line"></div><div class="line">// In the implementation file</div><div class="line">NSString *const EOCStringConstant = @&quot;VALUE&quot;;</div></pre></td></tr></table></figure>
+<p>这个常量声明在头文件，定义在实现文件。在常量类型中，<code>const</code>修饰符是非常重要的。这些声明是从后向前读的，意思是在这种情况下，<code>EOCStringConstant</code>是一个常量指向一个字符串。这正是我们想要的；常量不允许修改所指向的字符串对象。</p>
+<p>当编译器在文件中发现一个<code>extern</code>修饰的常量被使用时，<code>extern</code>关键字会告诉编译器，在导入的类中去寻找。这个关键字告诉编译器在全局符号表中有一个<code>EOCStringConstant</code>的符号。这意味着编译器可以不知道常量的定义而去使用它。编译器简单的知道当文件链接为二进制文件时常量是存在的。</p>
+<p>常量必须被定义并且仅定义一次。它通常定义在实现文件，声明在它的头文件。编译器将会为从实现文件生成的目标文件的数据段中的字符串分配存储空间。无论它在哪里被使用，当这个目标文件跟其他文件链接生成最后的二进制时，链接器都将能找到它的全局符号。</p>
+<p>实际上，符号出现在全局符号表的意思是你应该小心常量的命名。例如，一个处理登录的类会在登录后对整个应用发送一个通知。这个通知看起来是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">// EOCLoginManager.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">extern NSString *const EOCLoginManagerDidLoginNotification;</div><div class="line"></div><div class="line">@interface EOCLoginManager : NSObject</div><div class="line">- (void)login;</div><div class="line">@end</div><div class="line"></div><div class="line">// EOCLoginManager.m</div><div class="line">#import &quot;EOCLoginManager.h&quot;</div><div class="line"></div><div class="line">NSString *const EOCLoginManagerDidLoginNotification =</div><div class="line">	@&quot;EOCLoginManagerDidLoginNotification&quot;;</div><div class="line"></div><div class="line">@implementation EOCLoginManager</div><div class="line"></div><div class="line">- (void)login &#123;</div><div class="line">    // Perfoem login asynchronously, then call &apos;p_didLogin&apos;.</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)p_didLogin &#123;</div><div class="line">    </div><div class="line">    [[NSNotificationCenter defaultCenter]</div><div class="line">      postNotificationName:EOCLoginManagerDidLoginNotification</div><div class="line">      					object:nil];</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>注意常量的名字。常量前缀使用类的名字是谨慎的并且可以帮助你去避免冲突。这在整个系统框架中都是常见的。<code>UIKit</code>，例如，将通知名称以相同的办法声明为全局常量。这些名字包括<code>UIApplicationDidEnterBackgroundNotification</code>和<code>UIApplicationWillEnterForegroundNotification</code>.</p>
+<p>其它类型的常量同样可以这样做。如果动画持续时间需要暴露在<code>EOCAnimatiedView</code>类之外，在上面的例子中，你可以这样声明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//EOCAnimatedView.h</div><div class="line">extern const NSTimeInterval kAnimationDuration;</div><div class="line"></div><div class="line">//EOCAnimatedView.m</div><div class="line">const NSTimeInterval kAnimationDuration = 0.3;</div></pre></td></tr></table></figure>
+<p>用这种方法定义一个常量是优于使用宏定义的，因为编译器可以确定这个值不能被改变。在<code>EOCAnimatedView.m</code>定义一次，它的值可以在任何地方使用。一个宏定义可以重复定义，意味着一个程序的不同部分可能使用了不同的值。</p>
+<p>综上所述，对于常量避免使用宏定义。相反，使用编译器可以观察的常量，如在实现文件中使用<code>static</code>、<code>const</code>声明常量。</p>
+<h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><p>避免宏定义。它们不包含任何类型信息并且可以在编译前被简单的查找替换。它们可以重新定义并且没有警告，使得整个应用的值不一致。</p>
+<p>使用<code>static</code>、<code>const</code>在实现文件中定义特定编译单元的常量。这些常量将不会被暴露在全局字符表中，所以它们的名字不需要命名空间。</p>
+<p>使用<code>extern</code>在头文件声明它们，在关联的实现文件定义它们。这些常量将出现在全局字符表，所以它们的名字应该需要命名空间，通常使用类名作为前缀是合理的。</p>
 ]]></content>
     
     <summary type="html">
