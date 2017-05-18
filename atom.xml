@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-05-12T11:30:25.000Z</updated>
+  <updated>2017-05-18T10:09:57.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,11 +16,100 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>译《Effective Objective-C 2.0》第二章</title>
+    <link href="http://yoursite.com/2017/05/14/Object,%20Messaging,%20and%20the%20Runtime/"/>
+    <id>http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/</id>
+    <published>2017-05-14T06:57:56.000Z</published>
+    <updated>2017-05-18T10:09:57.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
+<a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在<code>Objective-C</code>等面向对象的语言中，对象就是基石，提供数据存储和传递的功能。消息是在过程中对象之间进行数据传递和执行操作。深入理解这些功能如何工作对于构建高效和可维护代码是至关重要的。</p>
+<p>当程序运行后，<code>Objective-C</code>中的<code>runtime</code>为其提供相关支持。<code>runtime</code>提供了关键的函数使对象之间可以传递消息以及创建类实例的所有逻辑。理解这一切如何工作会使你成为一个更好的开发者。</p>
+<h3 id="理解属性"><a href="#理解属性" class="headerlink" title="理解属性"></a>理解属性</h3><p>属性是<code>Objective-C</code>的一个功能，用于对象对数据的封装。<code>Objective-C</code>对象通常会把它们所需要的数据保存为各种实例变量。实例变量的访问通常通过存取方法。<code>getter</code>方法用来读取变量，<code>setter</code>方法用来设置变量。这个概念是标准的，并且通过属性这个功能成为了<code>Objective-C 2.0</code>的一部分，这让开发者令编译器去自动生成读写方法。这个功能引入了一个新语法即点语法，通过点语法访问数据存储可以减少代码的冗长。你可能已经使用了属性，但你可能不知道它所有的功能。而且，还有很多与之相关的问题。第6节主要说明哪些问题可以通过属性解决并且指出主要的功能。</p>
+<p>用一个类去表示一个人的信息可能要存储名字，出生日期，地址等等。你可能这样在一个类的公共接口中声明这些变量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line">@interface EOCPerson : NSObject &#123;</div><div class="line">    </div><div class="line">@public</div><div class="line">    NSString *_firstName;</div><div class="line">    NSString *_lastName;</div><div class="line">@private</div><div class="line">    NSString *_someInternalData;</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>如果你从事过<code>Java</code>或者<code>C++</code>开发，这种写法是熟悉的，你可以定义变量的作用域。然而，这种技术在<code>Objective-C</code>中很少使用。这种方法的问题是在编译时就定义了对象的布局。无论任何时候访问<code>_firstName</code>变量，都会通过编译器偏移硬编码去访问存储对象的内存空间。如果你不在<code>_firstName</code>之前添加任何变量这样做都是没问题的。例如：假设在<code>_firstName</code>之前添加一个变量：</p>
+<hr>
+<p>译者言：由于对象布局在编译时已定，对象内存偏移量自然固定，此处硬编码代指偏移量。</p>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interface EOCPerson : NSObject &#123;</div><div class="line">    </div><div class="line">@public</div><div class="line">    NSDate *_dateOfBirth;</div><div class="line">    NSString *_firstName;</div><div class="line">    NSString *_lastName;</div><div class="line">@private</div><div class="line">    NSString *_someInternalData;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>之前的偏移量代表<code>_firstName</code>而现在代表<code>_dateOfBirth</code>了。任何通过硬编码读取的地方都将读取到一个错误的值。为了说明这一点，假设指针是4个字节，图2.1分别展示了添加<code>_dateOfBirth</code>变量之前和之后的类的内存布局。<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.1.png" alt=""></p>
+<p><strong>Figure 2.1</strong> 添加变量前类的布局和添加变量后类的布局</p>
+<p>当类定义发生变化时，如果代码使用了编译时的偏移量那么将出现问题，除非重新编译。例如，一个代码库中的代码使用了旧的类定义。如果链接的代码使用了新的类定义，那么在运行时将出现不兼容的情况。为了解决这个问题，各种语言都提出了自己的解决办法。<code>Objective-C</code>的做法是，将实例变量看做特殊的变量，由类变量(第14节详细的讲述了类对象)去存储它的偏移量。在运行时，会去查找偏移量，当类定义发生改变，偏移量也随之改变。这样无论如何访问一个变量，都会使用正确的偏移量。你甚至可以在运行期间给类添加实例变量。这就是稳固的<code>ABI</code>(应用程序二进制接口)。<code>ABI</code>定义了许多内容，其中一项是生成代码时的规则。稳固的<code>ABI</code>也意味着你可以在一个分类中或者实现文件中定义实例变量。因此，你不需要在接口文件中声明所有的实例变量，因此你不需要在公共接口中泄露任何你的内部实现信息。</p>
+<p>另一种解决这个问题的办法是使用存取方法而不是直接访问实例变量。虽然属性最终仍是由实例变量实现的，但是属性提供了一种简洁的抽象。你可以自己编写存取方法，但是在标准的<code>Objective-C</code>代码格式中，存取方法遵循严格的命名规则。因为严格的命名，<code>Objective-C</code>才能根据变量名自动创建存取方法。这就是<code>@property</code>语法的来源。</p>
+<p>在对象接口的定义中使用<code>@property</code>，这是一种标准的写法，以提供对象的存取方法。因此，可以把属性当做一种简称，通过它去访问一个给定类型和给定名字的变量。例如，考虑下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSObject</div><div class="line">@property NSString *firstName;</div><div class="line">@property NSString *lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>对于类的使用者，上面的代码是等价于下面的代码的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSObject</div><div class="line">- (NSString *)firstName;</div><div class="line">- (void)setFirstName:(NSString *)firstName;</div><div class="line">- (NSString *)lastName;</div><div class="line">- (void)setLastName:(NSString *)lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>使用属性，你可以使用点语法。在<code>C</code>中你访问栈结构体的成员也是使用类似语法。编译器会将点语法转化为存取方法，与你直接调用是一样的。因此，使用点语法和直接调用时没有任何差异的。下面展示了等价的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">EOCPerson *aPerson = [EOCPerson new];</div><div class="line">    </div><div class="line">aPerson.firstName = @&quot;Bob&quot;; // Same as;</div><div class="line">[aPerson setFirstName:@&quot;Bob&quot;];</div><div class="line">    </div><div class="line">NSString *lastName = aPerson.lastName; // Same as;</div><div class="line">NSString *lastName = [aPerson lastName];</div></pre></td></tr></table></figure>
+<p>属性的好处还不止这些。如果你使用它，编译器将会通过一个叫做自动合成的功能生成那些方法代码。需要强调的是，编译器会在编译时自动生成代码，所以你在编辑器中是看不到自动合成的方法的。除了自动生成上述代码，编译器也会自动生成一个合适类型的变量，并且会在名字前面加下划线。在前面的代码中，他自动生成了两个变量：<code>_firstName</code>和<code>_lastName</code>。通过在类实现中使用<code>@synthesize</code>语法，这两个实例变量名字是可以控制的，像这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@implementation EOCPerson</div><div class="line">@synthesize firstName = _myFirstName;</div><div class="line">@synthesize lastName = _myLastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>使用上面的语法会产生两个实例变量，分别叫做<code>_myFirstName</code>和<code>_myLastName</code>，用于代替默认生成的。不过一般不会去改变默认的变量名；然而如果你不喜欢使用下划线去命名变量，你可以使用这个方法去设置你想要的。但是我建议你使用默认的命名规则，如果每个人都遵循这个规则，那么每个人读代码都是容易理解的。</p>
+<p>如果你不想编译器给你自动生成存取方法，你可以自己去实现这些方法。然而，如果你仅实现了存取方法中的一个，那么编译器仍会自动生成另一个方法。另一种阻止它自动生成的办法是使用<code>@dynamic</code>关键字，这会告诉编译器不要自动生成实例变量返回给属性并且不会自动生成存取方法。而且，当编译代码访问这个属性时，编译器将会忽略实际上存取方法还没有定义的情况，并且相信它在运行时是可以使用的。例如，如果一个类继承自<code>NSManagedObject</code>类，它的存取方法需要在运行时动态创建。<code>NSManagedObject</code>类之所以这样做是因为子类的属性不是实例变量。它的数据来源于后台数据库。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSManagedObject</div><div class="line">@property NSString *firstName;</div><div class="line">@property NSString *lastName;</div><div class="line">@end</div><div class="line"></div><div class="line">@implementation EOCPerson</div><div class="line">@dynamic firstName, lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在这个类中，编译器不会自动生成存取方法或者实例变量。如果你尝试去访问某个属性，编译器也没有警告信息。</p>
+<h4 id="属性特质"><a href="#属性特质" class="headerlink" title="属性特质"></a>属性特质</h4><p>属性的另一个问题是你应该知道它所有的特质。你可以通过它去影响编译器生成的存取方法。例如下面这个属性使用了三个特质：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property (nonatomic, readwrite, copy) NSString *firstName;</div></pre></td></tr></table></figure>
+<p>属性可以使用4类特质。</p>
+<h4 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h4><p>通常，生成的存取方法包含锁去保持原子性。如果你设置了<code>nonatomic</code>特质，那么就不会有锁了。请注意，尽管没有<code>atomic</code>特质(<code>atomic</code>特质是由你不设置<code>nonatomic</code>特质得来的)，但是你仍何以在属性特质中写上，并且编译器不会报错。如果你自己实现存取方法，你应该指定与其相符的原子性。</p>
+<h4 id="读写权限"><a href="#读写权限" class="headerlink" title="读写权限"></a>读写权限</h4><ul>
+<li><strong>readwrite</strong> 读写权限时，<code>getter</code>和<code>setter</code>方法都是可用的。如果属性是自动合成的，那么编译器将会自动生成两个方法。</li>
+<li><strong>readonly</strong> 只读权限时，只有<code>getter</code>方法是可用的，如果属性是自动合成的，那么编译器将只生成<code>getter</code>方法。当你想暴漏一个只读属性给外部，并且需要在内部重新定义它为可读写时，你可以使用它。第27节讲了更多内容。</li>
+</ul>
+<h4 id="内存管理语义"><a href="#内存管理语义" class="headerlink" title="内存管理语义"></a>内存管理语义</h4><p>属性用于封装数据，数据需要有具体的所有权。它仅仅影响setter方法。例如，用<code>setter</code>方法设置一个值时，它是应该保持新值还是将其直接赋给底层实例变量?当编译器自动生成存取方法时，它要取决于这些特质去生成代码。如果你自己实现存取方法，你应该指定与其相符的特质。</p>
+<ul>
+<li><strong>assign</strong> 它的<code>setter</code>方法只会简单的给标量类型的值赋值，例如<code>CGFloat</code>或者<code>NSInteger</code>。</li>
+<li><strong>strong</strong> 这种特质表示定义了一个拥有关系。当为这个属性赋值时，首先持有新值，接着释放旧值，然后将新值赋给这个属性。</li>
+<li><strong>weak</strong> 这种特质表示定义了一个非拥有关系。当为这个属性赋值时，它是不持有新值的；也不释放旧值。它是类似于<code>assign</code>特质的，但当目标对象释放时，它的值会被自动置为nil。</li>
+<li><strong>unsafe_unretained</strong> 它同<code>assign</code>语义相似，但是它适用于对象类型，它表达了一个非拥有关系，当目标对象销毁时，它不会自动置为nil，这点与<code>weak</code>是有区别的。</li>
+<li><strong>copy</strong> 这种特质类似<code>strong</code>特质，定义一个拥有关系；然而，它是用拷贝替代持有新值的。当属性是类似与<code>NSString *</code>时，经常用此特质保证其封装性，因为可能通过<code>setter</code>方法给予其一个可变值。如果赋的值是可变的，那么这个属性的类型可能就在对象不知道的情况下改变。所以就需要使用<code>copy</code>特质去使对象中的字符串不会在无意中被改变。任何需要保持不可变的对象都应该使用<code>copy</code>去修饰。</li>
+</ul>
+<h4 id="方法名"><a href="#方法名" class="headerlink" title="方法名"></a>方法名</h4><p>通过使用下面的特质可以控制存取方法的名字：</p>
+<ul>
+<li><p><strong>getter=<name></name></strong> 指定<code>getter</code>的名字。当你想给一个<code>Boolean</code>属性加上is前缀时，通常使用这个方法。例如，在<code>UISwitch</code>类中，表示状态开关的属性就是这样定义的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property(nonatomic,getter=isOn) BOOL on;</div></pre></td></tr></table></figure>
+</li>
+<li><p><strong>setter=<name></name></strong> 指定<code>setter</code>的名字。这个方法不常用的。</p>
+</li>
+</ul>
+<p>你可以通过这些特质细微的控制自动生成的存取方法。然而，需要谨记的是，如果你实现了自己的存取方法，你应该遵循指定的特质。例如，一个属性使用了<code>copy</code>特质，你需要在<code>setter</code>中拷贝它。否则，会误导属性的使用者。而且，如果不遵守这个约定，那么将会产生bug。</p>
+<p>即使你可以通过别的方法设置属性，你也要遵循定义时的特质。例如，考虑扩充下<code>EOCPerson</code>类。属性声明时，使用了<code>copy</code>特质，因为它可能是可变的。这个类也增加了一个初始化方法，用于设置名和姓的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSManagedObject</div><div class="line"></div><div class="line">@property (copy) NSString *firstName;</div><div class="line">@property (copy) NSString *lastName;</div><div class="line"></div><div class="line">- (id)initWithFirstName:(NSString *)firstName</div><div class="line">               lastName:(NSString *)lastName;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在实现自定义初始化方法时，遵循定义时的<code>copy</code>语义是非常重要的。因为属性定义就像类和对象之间的协议一样。所以初始化的代码应该是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- (id)initWithFirstName:(NSString *)firstName lastName:(NSString *)lastName &#123;</div><div class="line">    </div><div class="line">    if ((self = [super init])) &#123;</div><div class="line">        </div><div class="line">        _firstName = [firstName copy];</div><div class="line">        _lastName = [lastName copy];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return self;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>你可能会问为什么不简单的使用属性的<code>setter</code>方式去设置，如果总是使用<code>setter</code>设置，那将会保证属性的正确设置。你永远不该在<code>init</code>方法中使用存取方法，具体请看第7节。</p>
+<p>如果你已经读了第18节，你应该知道，最好使对象不可变。将上述内容应用在<code>EOCPerson</code>类中，你需要设置两个属性为<code>readonly</code>。在初始化中设置它们的值，然后它们将不能被修改。在本例中，对你使用的值使用内存管理语义是重要的。所以属性定义的代码是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@property (copy, readonly) NSString *firstName;</div><div class="line">@property (copy, readonly) NSString *lastName;</div></pre></td></tr></table></figure>
+<p>因为是只读属性，所以编译器不会为其自动生成<code>setter</code>方法。这样做是重要的，可以表明在初始化时设置了这两个属性值。没有这样的声明，使用这个类的人就可能不知道已经在<code>init</code>方法中使用了<code>copy</code>，因此他们可能会在调用初始化方法之前自行拷贝。这种操作是多余且低效的。</p>
+<p>如果你想知道<code>atomic</code>和<code>nonatomic</code>的区别。前面说过，使用了<code>atomic</code>的属性的存取方法会自动加锁确保原子性。这个意思是如果两个线程同时对属性进行读写操作，这个值不论在任何时候始终是有效的。如果不加所得情况下，当一个线程正在进行修改时，另一个线程进行读取，可能会将其未修改完的值读出来。如果发生了这种情况，读到的值可能是无效的。</p>
+<p>如果你是在iOS中开发，那么你会注意到所有属性声明为<code>nonatomic</code>。这样做的历史原因是，加锁消耗比较大，可能会产生性能问题。通常，原子性并不是必须的，因为它不能确保线程安全，需要更深层次的锁定机制才能保证其线程安全。例如，即使使用了原子性，一个线程在连续读取某个属性值时，另一个线程修改了这个属性，仍将不能确保读到的是正确的值。因此，在iOS开发中你将一直使用<code>nonatomic</code>去修饰属性。但是在Mac OS X中，你不需要担心<code>atomic</code>带来的性能问题。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li><code>@property</code>语法提供了一种对象封装数据的定义。</li>
+<li>使用正确的特质提供数据存储。</li>
+<li>在设置属性所对应的实例变量时，需要遵循该属性的语义。</li>
+<li>在iOS中使用<code>nonatomic</code>，因为它会严重消耗性能。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Objective-C" scheme="http://yoursite.com/categories/Objective-C/"/>
+    
+    
+  </entry>
+  
+  <entry>
     <title>译《Effective Objective-C 2.0》第一章</title>
     <link href="http://yoursite.com/2017/04/29/Accustoming%20Yourself%20to%20Objective-C/"/>
     <id>http://yoursite.com/2017/04/29/Accustoming Yourself to Objective-C/</id>
     <published>2017-04-29T06:48:05.000Z</published>
-    <updated>2017-05-12T11:30:25.000Z</updated>
+    <updated>2017-05-18T10:13:02.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第一章：对Objective-C的认识</p>
 <a id="more"></a>
@@ -48,8 +137,12 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">struct CGRect &#123;</div><div class="line">	CGRect origin;</div><div class="line">	CGSize size;</div><div class="line">&#125;;</div><div class="line">typedef struct CGRect CGRect;</div></pre></td></tr></table></figure>
 <p>这些类型的结构体被用于整个系统框架，在其中使用Objective-C对象可能会影响性能。创建对象会产生额外开销，而结构体不会，例如初始化和释放堆内存。当保存的数据类型不是对象时，通常会使用一个结构体，如<code>CGRect</code>。</p>
 <p>在开始书写Objective-C之前，我建议你去读C语言的文档并且熟悉它的语法。如果你直接书写Objective-C代码，你可能会找到部分令你困惑的语法。</p>
-<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>Objective-C是C的超集，添加了面向对象的功能。<br>Objective-C使用消息机制和动态绑定，意思是一个对象的类型是在运行时确定的。Objective-C是运行时而不是编译时，通过消息决定代码如何运行。</p>
-<p>了解C语言的核心概念将帮助写出更有效的Objective-C代码。特别是你需要理解内存模式和指针。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>Objective-C是C的超集，添加了面向对象的功能。</li>
+<li>Objective-C使用消息机制和动态绑定，意思是一个对象的类型是在运行时确定的。 </li>
+<li>Objective-C是运行时而不是编译时，通过消息决定代码如何运行。</li>
+<li>了解C语言的核心概念将帮助写出更有效的Objective-C代码。特别是你需要理解内存模式和指针。</li>
+</ul>
 <h3 id="减少在头文件中使用import"><a href="#减少在头文件中使用import" class="headerlink" title="减少在头文件中使用import"></a>减少在头文件中使用import</h3><p>Objective-C使用头文件和实现文件就像C和C++一样。当在Objective-C写一个类，标准方法是创建的每个文件名均以类名命名，后缀带有<code>.h</code>的是头文件，带有<code>.m</code>的是实现文件。当你创建一个类时，它看起来是这样的：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">//	EOCPerson.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interfrace EOCPerson : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, copy) NSString *firstName;</div><div class="line">@property (nonatomic, copy) NSString *lastName;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">// EOCPerson.m</div><div class="line">#import &quot;EOCPerson.h&quot;</div><div class="line"></div><div class="line">@implementation EOCPerson</div><div class="line">// Implementation of methods</div><div class="line">@end</div></pre></td></tr></table></figure>
 <p>对所有类来说，导入<code>Foundation.h</code>是必须的，你将在Objective-C中一直使用它。或者你在某个类的父类中导入框架的头文件。例如，你创建一个iOS应用，你通常会创建<code>UIViewController</code>的子类。这些类的头文件将会导入<code>UIKit.h</code>。</p>
@@ -74,8 +167,10 @@
 <p>这个导入是无法避免的。对于这样的协议，放置它们在自己类的头文件应该是谨慎的。如果<code>EOCDrawable</code>协议是一个大的头文件的一部分，你将不得不导入它的所有内容。如前面所描述的一样会产生同样的依赖和额外的编译时间的问题。</p>
 <p>即使如此，也不是所有协议都是这样的。例如，代理协议(看第23节)，需要放置在自己头文件中。在这种情况下，协议的使用场景仅在当它作为委托类的一部分一起定义时。在这种情况下，它最好声明在你的实现文件中，即<code>.m</code>中使用类扩展声明它。这意思是在实现文件中导入包含协议的头文件而不是在头文件中。</p>
 <p>每当在头文件导入文件时，总是问自己这是否是必要的。如果导入可以用向前声明代替，那么使用向前声明。如果导入它为了使用一些属性，实例变量或者实现协议并且可以移动到实现文件中时，那么移动它。那将会尽可能减少编译时间和相互依赖的可能性，可以修复问题或者在公共API中减少你暴漏的代码。</p>
-<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><p>总在尽可能深的层次导入头文件。经常在头文件使用向前声明并且在实现文件导入它们。这样做可以尽量避免两个类的相互引用。</p>
-<p>有时，向前声明是不适用的，在声明协议遵循时。在这种情况下，考虑移动协议遵循到类的实现文件中。或者，导入仅有协议定义的头文件。</p>
+<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>总在尽可能深的层次导入头文件。经常在头文件使用向前声明并且在实现文件导入它们。这样做可以尽量避免两个类的相互引用。</li>
+<li>有时，向前声明是不适用的，在声明协议遵循时。在这种情况下，考虑移动协议遵循到类的实现文件中。或者，导入仅有协议定义的头文件。</li>
+</ul>
 <h3 id="多使用Literal-Syntax少使用与之等价的方法"><a href="#多使用Literal-Syntax少使用与之等价的方法" class="headerlink" title="多使用Literal Syntax少使用与之等价的方法"></a>多使用Literal Syntax少使用与之等价的方法</h3><hr>
 <p>译者言:有人将Literal Syntax称为字面量语法，Literal Number称为字面量数字，Literal Array称为字面量数组，Literal Dictionary称为字面量字典。</p>
 <hr>
@@ -126,9 +221,11 @@
 <p>同样的，在这种情况下，字符串、数组、字典，仅有它们的可变类可以通过Literal Syntax创建对象。如果需要一个可变变量，<code>mutableCopy</code>必须被调用，像这样：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSMutableArray *mutable = [@[@1, @2, @3, @4, @5] mutableCopy];</div></pre></td></tr></table></figure>
 <p>它添加了一个额外方法的调用，并且一个额外的对象将会被创建，但是使用Literal Syntax的好处是超过它的坏处的。</p>
-<h4 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h4><p>使用Literal Syntax去创建字符串，数字，数组，字典。它是比正常的创建对象的语法简洁和清晰地。</p>
-<p>通过下标法访问数组或者字典。</p>
-<p>使用Literal Syntax给数组或者字典插入一个空的值将会产生一个异常。因此，尽量确定它们的值不为空。</p>
+<h4 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>使用Literal Syntax去创建字符串，数字，数组，字典。它是比正常的创建对象的语法简洁和清晰地。</li>
+<li>通过下标法访问数组或者字典。</li>
+<li>使用Literal Syntax给数组或者字典插入一个空的值将会产生一个异常。因此，尽量确定它们的值不为空。</li>
+</ul>
 <h3 id="优先使用类型常量，减少使用-define预处理"><a href="#优先使用类型常量，减少使用-define预处理" class="headerlink" title="优先使用类型常量，减少使用#define预处理"></a>优先使用类型常量，减少使用#define预处理</h3><p>在写代码时，你经常想去定义一个常量。例如，一个<code>UIView</code>类出现和消失时它自身的动画。你可能想定义一个常量来代表动画持续的时间。你已经学会了<code>Objective-C</code>和<code>C</code>的基础，所以你决定使用的方法是这样的：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#define ANIMATION_DURATION 0.3</div></pre></td></tr></table></figure>
 <p>这是一个预处理指定；每当在你的代码中出现<code>ANIMATION_DURATION</code>字符，就用0.3替代。这看起来就是你想要的，但是这种定义没有类型信息。它就像是声明了一个叫做“duration”的事物意指它的value与时间有关系，但它并不是明确的。并且，它会将所有<code>ANIMATION_DURATION</code>替换掉，如果它声明在头文件中，别的任何导入了这个头文件的类都将被替代。</p>
@@ -155,9 +252,11 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//EOCAnimatedView.h</div><div class="line">extern const NSTimeInterval kAnimationDuration;</div><div class="line"></div><div class="line">//EOCAnimatedView.m</div><div class="line">const NSTimeInterval kAnimationDuration = 0.3;</div></pre></td></tr></table></figure>
 <p>用这种方法定义一个常量是优于使用宏定义的，因为编译器可以确定这个值不能被改变。在<code>EOCAnimatedView.m</code>定义一次，它的值可以在任何地方使用。一个宏定义可以重复定义，意味着一个程序的不同部分可能使用了不同的值。</p>
 <p>综上所述，对于常量避免使用宏定义。相反，使用编译器可以观察的常量，如在实现文件中使用<code>static</code>、<code>const</code>声明常量。</p>
-<h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><p>避免宏定义。它们不包含任何类型信息并且可以在编译前被简单的查找替换。它们可以重新定义并且没有警告，使得整个应用的值不一致。</p>
-<p>使用<code>static</code>、<code>const</code>在实现文件中定义特定编译单元的常量。这些常量将不会被暴露在全局字符表中，所以它们的名字不需要命名空间。</p>
-<p>使用<code>extern</code>在头文件声明它们，在关联的实现文件定义它们。这些常量将出现在全局字符表，所以它们的名字应该需要命名空间，通常使用类名作为前缀是合理的。</p>
+<h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>避免宏定义。它们不包含任何类型信息并且可以在编译前被简单的查找替换。它们可以重新定义并且没有警告，使得整个应用的值不一致。</li>
+<li>使用<code>static</code>、<code>const</code>在实现文件中定义特定编译单元的常量。这些常量将不会被暴露在全局字符表中，所以它们的名字不需要命名空间。</li>
+<li>使用<code>extern</code>在头文件声明它们，在关联的实现文件定义它们。这些常量将出现在全局字符表，所以它们的名字应该需要命名空间，通常使用类名作为前缀是合理的。</li>
+</ul>
 <h3 id="使用枚举表示状态、选项、状态码"><a href="#使用枚举表示状态、选项、状态码" class="headerlink" title="使用枚举表示状态、选项、状态码"></a>使用枚举表示状态、选项、状态码</h3><p>因为<code>Objective-C</code>是基于<code>C</code>的，<code>C</code>的所有功能<code>Objective-C</code>都是适用的。其中一个就是枚举类型，<code>enum</code>。它在系统框架中被广泛使用，但是常常被开发者忽略。它用于定义命名常量是非常有用的，例如，错误状态码和定义选项是可以组合的。感谢<code>C++11</code>标准支持了它，最近的系统版本包含枚举类型。是的，<code>Objective-C</code>也得益于<code>C++11</code>的标准。</p>
 <p>枚举仅仅是命名常量的一种方法。一个简单的枚举集合可以用来表示一个对象的状态。例如，一个socket链接使用枚举表示如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">enum EOCConnectionState &#123;</div><div class="line">    EOCConnectionStateDisconnected,</div><div class="line">    EOCConnectionStateConnecting,</div><div class="line">    EOCConnectionStateConnected,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
@@ -203,10 +302,12 @@
 <p>最后一点是关于在<code>switch</code>中使用枚举变量。又是，你会这样定义它们：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">typedef NS_ENUM(NSUInteger, EOCConnectionState) &#123;  </div><div class="line">    EOCConnectionStateDisconnected,  </div><div class="line">    EOCConnectionStateConnecting,  </div><div class="line">    EOCConnectionStateConnected,  </div><div class="line">&#125;;  </div><div class="line"> </div><div class="line">switch (_currentState) &#123;  </div><div class="line">    EOCConnectionStateDisconnected:  </div><div class="line">        // Handle disconnected state  </div><div class="line">        break;  </div><div class="line">    EOCConnectionStateConnecting:  </div><div class="line">        // Handle connecting state  </div><div class="line">        break;  </div><div class="line">    EOCConnectionStateConnected:  </div><div class="line">        // Handle connected state  </div><div class="line">        break;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>我们习惯在<code>switch</code>语句中加上默认分支。然而，当使用枚举值表示状态时，最好不要写一个默认分支。这样做的原因是，当你在稍后添加了一个新的状态，那么编译器将会警告你，提示你有新的状态未加入<code>switch</code>分支。如果有一个默认的分支，编译器将会处理它，那么编译器将不会发出警告。这个问题同样适用于别的使用<code>NS_ENUM</code>的定义中。例如，你定义一个<code>UI</code>元素，你将会希望每个情况都有一个确定的样式。</p>
-<h4 id="小结-4"><a href="#小结-4" class="headerlink" title="小结"></a>小结</h4><p>使用枚举来表示状态机的状态，传递给函数的选项，或者错误码，并且起一个易读的名字。</p>
-<p>如果把一个传递给方法的选项表示为枚举类型，同时还需要多重操作，可以将它们的值设为2的幂，然后通过<code>按位或操作</code>将其组合起来。</p>
-<p>使用<code>NS_ENUM</code>和<code>NS_OPTIONS</code>宏最好给枚举定义一个明确的数据类型。这样做的意思是确定枚举的数据类型是开发者设置的，而不是编译器指定的。</p>
-<p>在<code>switch</code>中使用枚举时，不要设置默认分支。这样在你添加新枚举后，编译器会提醒你添加新分支。</p>
+<h4 id="小结-4"><a href="#小结-4" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>使用枚举来表示状态机的状态，传递给函数的选项，或者错误码，并且起一个易读的名字。</li>
+<li>如果把一个传递给方法的选项表示为枚举类型，同时还需要多重操作，可以将它们的值设为2的幂，然后通过<code>按位或操作</code>将其组合起来。</li>
+<li>使用<code>NS_ENUM</code>和<code>NS_OPTIONS</code>宏最好给枚举定义一个明确的数据类型。这样做的意思是确定枚举的数据类型是开发者设置的，而不是编译器指定的。</li>
+<li>在<code>switch</code>中使用枚举时，不要设置默认分支。这样在你添加新枚举后，编译器会提醒你添加新分支。</li>
+</ul>
 ]]></content>
     
     <summary type="html">

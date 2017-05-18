@@ -1,0 +1,936 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="YownYang, iOS, Weex, YownYang's blog" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="YownYang's blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译《Effective Objective-C 2.0》第二章">
+<meta property="og:url" content="http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/index.html">
+<meta property="og:site_name" content="YownYang's blog">
+<meta property="og:description" content="这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时">
+<meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.1.png">
+<meta property="og:updated_time" content="2017-05-18T10:09:57.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="译《Effective Objective-C 2.0》第二章">
+<meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时">
+<meta name="twitter:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/"/>
+
+
+
+
+
+  <title> 译《Effective Objective-C 2.0》第二章 | YownYang's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1261580070&web_id=1261580070" language="JavaScript"></script>
+  </div>
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">YownYang's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="YownYang">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/uploads/avatar.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="YownYang's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="YownYang's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                译《Effective Objective-C 2.0》第二章
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-14T14:57:56+08:00">
+                2017-05-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Objective-C/" itemprop="url" rel="index">
+                    <span itemprop="name">Objective-C</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
+<a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在<code>Objective-C</code>等面向对象的语言中，对象就是基石，提供数据存储和传递的功能。消息是在过程中对象之间进行数据传递和执行操作。深入理解这些功能如何工作对于构建高效和可维护代码是至关重要的。</p>
+<p>当程序运行后，<code>Objective-C</code>中的<code>runtime</code>为其提供相关支持。<code>runtime</code>提供了关键的函数使对象之间可以传递消息以及创建类实例的所有逻辑。理解这一切如何工作会使你成为一个更好的开发者。</p>
+<h3 id="理解属性"><a href="#理解属性" class="headerlink" title="理解属性"></a>理解属性</h3><p>属性是<code>Objective-C</code>的一个功能，用于对象对数据的封装。<code>Objective-C</code>对象通常会把它们所需要的数据保存为各种实例变量。实例变量的访问通常通过存取方法。<code>getter</code>方法用来读取变量，<code>setter</code>方法用来设置变量。这个概念是标准的，并且通过属性这个功能成为了<code>Objective-C 2.0</code>的一部分，这让开发者令编译器去自动生成读写方法。这个功能引入了一个新语法即点语法，通过点语法访问数据存储可以减少代码的冗长。你可能已经使用了属性，但你可能不知道它所有的功能。而且，还有很多与之相关的问题。第6节主要说明哪些问题可以通过属性解决并且指出主要的功能。</p>
+<p>用一个类去表示一个人的信息可能要存储名字，出生日期，地址等等。你可能这样在一个类的公共接口中声明这些变量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line">@interface EOCPerson : NSObject &#123;</div><div class="line">    </div><div class="line">@public</div><div class="line">    NSString *_firstName;</div><div class="line">    NSString *_lastName;</div><div class="line">@private</div><div class="line">    NSString *_someInternalData;</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>如果你从事过<code>Java</code>或者<code>C++</code>开发，这种写法是熟悉的，你可以定义变量的作用域。然而，这种技术在<code>Objective-C</code>中很少使用。这种方法的问题是在编译时就定义了对象的布局。无论任何时候访问<code>_firstName</code>变量，都会通过编译器偏移硬编码去访问存储对象的内存空间。如果你不在<code>_firstName</code>之前添加任何变量这样做都是没问题的。例如：假设在<code>_firstName</code>之前添加一个变量：</p>
+<hr>
+<p>译者言：由于对象布局在编译时已定，对象内存偏移量自然固定，此处硬编码代指偏移量。</p>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interface EOCPerson : NSObject &#123;</div><div class="line">    </div><div class="line">@public</div><div class="line">    NSDate *_dateOfBirth;</div><div class="line">    NSString *_firstName;</div><div class="line">    NSString *_lastName;</div><div class="line">@private</div><div class="line">    NSString *_someInternalData;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>之前的偏移量代表<code>_firstName</code>而现在代表<code>_dateOfBirth</code>了。任何通过硬编码读取的地方都将读取到一个错误的值。为了说明这一点，假设指针是4个字节，图2.1分别展示了添加<code>_dateOfBirth</code>变量之前和之后的类的内存布局。<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.1.png" alt=""></p>
+<p><strong>Figure 2.1</strong> 添加变量前类的布局和添加变量后类的布局</p>
+<p>当类定义发生变化时，如果代码使用了编译时的偏移量那么将出现问题，除非重新编译。例如，一个代码库中的代码使用了旧的类定义。如果链接的代码使用了新的类定义，那么在运行时将出现不兼容的情况。为了解决这个问题，各种语言都提出了自己的解决办法。<code>Objective-C</code>的做法是，将实例变量看做特殊的变量，由类变量(第14节详细的讲述了类对象)去存储它的偏移量。在运行时，会去查找偏移量，当类定义发生改变，偏移量也随之改变。这样无论如何访问一个变量，都会使用正确的偏移量。你甚至可以在运行期间给类添加实例变量。这就是稳固的<code>ABI</code>(应用程序二进制接口)。<code>ABI</code>定义了许多内容，其中一项是生成代码时的规则。稳固的<code>ABI</code>也意味着你可以在一个分类中或者实现文件中定义实例变量。因此，你不需要在接口文件中声明所有的实例变量，因此你不需要在公共接口中泄露任何你的内部实现信息。</p>
+<p>另一种解决这个问题的办法是使用存取方法而不是直接访问实例变量。虽然属性最终仍是由实例变量实现的，但是属性提供了一种简洁的抽象。你可以自己编写存取方法，但是在标准的<code>Objective-C</code>代码格式中，存取方法遵循严格的命名规则。因为严格的命名，<code>Objective-C</code>才能根据变量名自动创建存取方法。这就是<code>@property</code>语法的来源。</p>
+<p>在对象接口的定义中使用<code>@property</code>，这是一种标准的写法，以提供对象的存取方法。因此，可以把属性当做一种简称，通过它去访问一个给定类型和给定名字的变量。例如，考虑下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSObject</div><div class="line">@property NSString *firstName;</div><div class="line">@property NSString *lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>对于类的使用者，上面的代码是等价于下面的代码的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSObject</div><div class="line">- (NSString *)firstName;</div><div class="line">- (void)setFirstName:(NSString *)firstName;</div><div class="line">- (NSString *)lastName;</div><div class="line">- (void)setLastName:(NSString *)lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>使用属性，你可以使用点语法。在<code>C</code>中你访问栈结构体的成员也是使用类似语法。编译器会将点语法转化为存取方法，与你直接调用是一样的。因此，使用点语法和直接调用时没有任何差异的。下面展示了等价的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">EOCPerson *aPerson = [EOCPerson new];</div><div class="line">    </div><div class="line">aPerson.firstName = @&quot;Bob&quot;; // Same as;</div><div class="line">[aPerson setFirstName:@&quot;Bob&quot;];</div><div class="line">    </div><div class="line">NSString *lastName = aPerson.lastName; // Same as;</div><div class="line">NSString *lastName = [aPerson lastName];</div></pre></td></tr></table></figure>
+<p>属性的好处还不止这些。如果你使用它，编译器将会通过一个叫做自动合成的功能生成那些方法代码。需要强调的是，编译器会在编译时自动生成代码，所以你在编辑器中是看不到自动合成的方法的。除了自动生成上述代码，编译器也会自动生成一个合适类型的变量，并且会在名字前面加下划线。在前面的代码中，他自动生成了两个变量：<code>_firstName</code>和<code>_lastName</code>。通过在类实现中使用<code>@synthesize</code>语法，这两个实例变量名字是可以控制的，像这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@implementation EOCPerson</div><div class="line">@synthesize firstName = _myFirstName;</div><div class="line">@synthesize lastName = _myLastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>使用上面的语法会产生两个实例变量，分别叫做<code>_myFirstName</code>和<code>_myLastName</code>，用于代替默认生成的。不过一般不会去改变默认的变量名；然而如果你不喜欢使用下划线去命名变量，你可以使用这个方法去设置你想要的。但是我建议你使用默认的命名规则，如果每个人都遵循这个规则，那么每个人读代码都是容易理解的。</p>
+<p>如果你不想编译器给你自动生成存取方法，你可以自己去实现这些方法。然而，如果你仅实现了存取方法中的一个，那么编译器仍会自动生成另一个方法。另一种阻止它自动生成的办法是使用<code>@dynamic</code>关键字，这会告诉编译器不要自动生成实例变量返回给属性并且不会自动生成存取方法。而且，当编译代码访问这个属性时，编译器将会忽略实际上存取方法还没有定义的情况，并且相信它在运行时是可以使用的。例如，如果一个类继承自<code>NSManagedObject</code>类，它的存取方法需要在运行时动态创建。<code>NSManagedObject</code>类之所以这样做是因为子类的属性不是实例变量。它的数据来源于后台数据库。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSManagedObject</div><div class="line">@property NSString *firstName;</div><div class="line">@property NSString *lastName;</div><div class="line">@end</div><div class="line"></div><div class="line">@implementation EOCPerson</div><div class="line">@dynamic firstName, lastName;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在这个类中，编译器不会自动生成存取方法或者实例变量。如果你尝试去访问某个属性，编译器也没有警告信息。</p>
+<h4 id="属性特质"><a href="#属性特质" class="headerlink" title="属性特质"></a>属性特质</h4><p>属性的另一个问题是你应该知道它所有的特质。你可以通过它去影响编译器生成的存取方法。例如下面这个属性使用了三个特质：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property (nonatomic, readwrite, copy) NSString *firstName;</div></pre></td></tr></table></figure>
+<p>属性可以使用4类特质。</p>
+<h4 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h4><p>通常，生成的存取方法包含锁去保持原子性。如果你设置了<code>nonatomic</code>特质，那么就不会有锁了。请注意，尽管没有<code>atomic</code>特质(<code>atomic</code>特质是由你不设置<code>nonatomic</code>特质得来的)，但是你仍何以在属性特质中写上，并且编译器不会报错。如果你自己实现存取方法，你应该指定与其相符的原子性。</p>
+<h4 id="读写权限"><a href="#读写权限" class="headerlink" title="读写权限"></a>读写权限</h4><ul>
+<li><strong>readwrite</strong> 读写权限时，<code>getter</code>和<code>setter</code>方法都是可用的。如果属性是自动合成的，那么编译器将会自动生成两个方法。</li>
+<li><strong>readonly</strong> 只读权限时，只有<code>getter</code>方法是可用的，如果属性是自动合成的，那么编译器将只生成<code>getter</code>方法。当你想暴漏一个只读属性给外部，并且需要在内部重新定义它为可读写时，你可以使用它。第27节讲了更多内容。</li>
+</ul>
+<h4 id="内存管理语义"><a href="#内存管理语义" class="headerlink" title="内存管理语义"></a>内存管理语义</h4><p>属性用于封装数据，数据需要有具体的所有权。它仅仅影响setter方法。例如，用<code>setter</code>方法设置一个值时，它是应该保持新值还是将其直接赋给底层实例变量?当编译器自动生成存取方法时，它要取决于这些特质去生成代码。如果你自己实现存取方法，你应该指定与其相符的特质。</p>
+<ul>
+<li><strong>assign</strong> 它的<code>setter</code>方法只会简单的给标量类型的值赋值，例如<code>CGFloat</code>或者<code>NSInteger</code>。</li>
+<li><strong>strong</strong> 这种特质表示定义了一个拥有关系。当为这个属性赋值时，首先持有新值，接着释放旧值，然后将新值赋给这个属性。</li>
+<li><strong>weak</strong> 这种特质表示定义了一个非拥有关系。当为这个属性赋值时，它是不持有新值的；也不释放旧值。它是类似于<code>assign</code>特质的，但当目标对象释放时，它的值会被自动置为nil。</li>
+<li><strong>unsafe_unretained</strong> 它同<code>assign</code>语义相似，但是它适用于对象类型，它表达了一个非拥有关系，当目标对象销毁时，它不会自动置为nil，这点与<code>weak</code>是有区别的。</li>
+<li><strong>copy</strong> 这种特质类似<code>strong</code>特质，定义一个拥有关系；然而，它是用拷贝替代持有新值的。当属性是类似与<code>NSString *</code>时，经常用此特质保证其封装性，因为可能通过<code>setter</code>方法给予其一个可变值。如果赋的值是可变的，那么这个属性的类型可能就在对象不知道的情况下改变。所以就需要使用<code>copy</code>特质去使对象中的字符串不会在无意中被改变。任何需要保持不可变的对象都应该使用<code>copy</code>去修饰。</li>
+</ul>
+<h4 id="方法名"><a href="#方法名" class="headerlink" title="方法名"></a>方法名</h4><p>通过使用下面的特质可以控制存取方法的名字：</p>
+<ul>
+<li><p><strong>getter=<name></name></strong> 指定<code>getter</code>的名字。当你想给一个<code>Boolean</code>属性加上is前缀时，通常使用这个方法。例如，在<code>UISwitch</code>类中，表示状态开关的属性就是这样定义的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property(nonatomic,getter=isOn) BOOL on;</div></pre></td></tr></table></figure>
+</li>
+<li><p><strong>setter=<name></name></strong> 指定<code>setter</code>的名字。这个方法不常用的。</p>
+</li>
+</ul>
+<p>你可以通过这些特质细微的控制自动生成的存取方法。然而，需要谨记的是，如果你实现了自己的存取方法，你应该遵循指定的特质。例如，一个属性使用了<code>copy</code>特质，你需要在<code>setter</code>中拷贝它。否则，会误导属性的使用者。而且，如果不遵守这个约定，那么将会产生bug。</p>
+<p>即使你可以通过别的方法设置属性，你也要遵循定义时的特质。例如，考虑扩充下<code>EOCPerson</code>类。属性声明时，使用了<code>copy</code>特质，因为它可能是可变的。这个类也增加了一个初始化方法，用于设置名和姓的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSManagedObject</div><div class="line"></div><div class="line">@property (copy) NSString *firstName;</div><div class="line">@property (copy) NSString *lastName;</div><div class="line"></div><div class="line">- (id)initWithFirstName:(NSString *)firstName</div><div class="line">               lastName:(NSString *)lastName;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在实现自定义初始化方法时，遵循定义时的<code>copy</code>语义是非常重要的。因为属性定义就像类和对象之间的协议一样。所以初始化的代码应该是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- (id)initWithFirstName:(NSString *)firstName lastName:(NSString *)lastName &#123;</div><div class="line">    </div><div class="line">    if ((self = [super init])) &#123;</div><div class="line">        </div><div class="line">        _firstName = [firstName copy];</div><div class="line">        _lastName = [lastName copy];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return self;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>你可能会问为什么不简单的使用属性的<code>setter</code>方式去设置，如果总是使用<code>setter</code>设置，那将会保证属性的正确设置。你永远不该在<code>init</code>方法中使用存取方法，具体请看第7节。</p>
+<p>如果你已经读了第18节，你应该知道，最好使对象不可变。将上述内容应用在<code>EOCPerson</code>类中，你需要设置两个属性为<code>readonly</code>。在初始化中设置它们的值，然后它们将不能被修改。在本例中，对你使用的值使用内存管理语义是重要的。所以属性定义的代码是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@property (copy, readonly) NSString *firstName;</div><div class="line">@property (copy, readonly) NSString *lastName;</div></pre></td></tr></table></figure>
+<p>因为是只读属性，所以编译器不会为其自动生成<code>setter</code>方法。这样做是重要的，可以表明在初始化时设置了这两个属性值。没有这样的声明，使用这个类的人就可能不知道已经在<code>init</code>方法中使用了<code>copy</code>，因此他们可能会在调用初始化方法之前自行拷贝。这种操作是多余且低效的。</p>
+<p>如果你想知道<code>atomic</code>和<code>nonatomic</code>的区别。前面说过，使用了<code>atomic</code>的属性的存取方法会自动加锁确保原子性。这个意思是如果两个线程同时对属性进行读写操作，这个值不论在任何时候始终是有效的。如果不加所得情况下，当一个线程正在进行修改时，另一个线程进行读取，可能会将其未修改完的值读出来。如果发生了这种情况，读到的值可能是无效的。</p>
+<p>如果你是在iOS中开发，那么你会注意到所有属性声明为<code>nonatomic</code>。这样做的历史原因是，加锁消耗比较大，可能会产生性能问题。通常，原子性并不是必须的，因为它不能确保线程安全，需要更深层次的锁定机制才能保证其线程安全。例如，即使使用了原子性，一个线程在连续读取某个属性值时，另一个线程修改了这个属性，仍将不能确保读到的是正确的值。因此，在iOS开发中你将一直使用<code>nonatomic</code>去修饰属性。但是在Mac OS X中，你不需要担心<code>atomic</code>带来的性能问题。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li><code>@property</code>语法提供了一种对象封装数据的定义。</li>
+<li>使用正确的特质提供数据存储。</li>
+<li>在设置属性所对应的实例变量时，需要遵循该属性的语义。</li>
+<li>在iOS中使用<code>nonatomic</code>，因为它会严重消耗性能。</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/29/Accustoming Yourself to Objective-C/" rel="next" title="译《Effective Objective-C 2.0》第一章">
+                <i class="fa fa-chevron-left"></i> 译《Effective Objective-C 2.0》第一章
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-58d6a53e969b167f" async = "async" ></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8yNzg5OC80NDc1"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="YownYang" />
+          <p class="site-author-name" itemprop="name">YownYang</p>
+          <p class="site-description motion-element" itemprop="description">匆匆那年 匆匆那天</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yownyang" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://roxyhuang.github.io/" title="NeoHuang" target="_blank">NeoHuang</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解属性"><span class="nav-number">2.</span> <span class="nav-text">理解属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#属性特质"><span class="nav-number">2.1.</span> <span class="nav-text">属性特质</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#原子性"><span class="nav-number">2.2.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#读写权限"><span class="nav-number">2.3.</span> <span class="nav-text">读写权限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存管理语义"><span class="nav-number">2.4.</span> <span class="nav-text">内存管理语义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法名"><span class="nav-number">2.5.</span> <span class="nav-text">方法名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.6.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">YownYang</span>
+</div>
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv"><i class="fa fa-user"></i><span class="busuanzi-value" id="busuanzi_value_site_uv"></span></span>
+  
+
+  
+    <span class="site-pv"><i class="fa fa-eye"></i><span class="busuanzi-value" id="busuanzi_value_site_pv"></span></span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+ 
+  <script type="text/javascript">
+   (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+   })(document, 'script');
+  </script>
+ 
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
