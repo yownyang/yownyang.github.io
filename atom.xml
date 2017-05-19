@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-05-18T10:09:57.000Z</updated>
+  <updated>2017-05-19T08:35:02.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/05/14/Object,%20Messaging,%20and%20the%20Runtime/"/>
     <id>http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/</id>
     <published>2017-05-14T06:57:56.000Z</published>
-    <updated>2017-05-18T10:09:57.000Z</updated>
+    <updated>2017-05-19T08:35:02.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
 <a id="more"></a>
@@ -90,6 +90,32 @@
 <li>使用正确的特质提供数据存储。</li>
 <li>在设置属性所对应的实例变量时，需要遵循该属性的语义。</li>
 <li>在iOS中使用<code>nonatomic</code>，因为它会严重消耗性能。</li>
+</ul>
+<h3 id="在对象内部直接访问实例变量"><a href="#在对象内部直接访问实例变量" class="headerlink" title="在对象内部直接访问实例变量"></a>在对象内部直接访问实例变量</h3><p>属性总是用于访问外部对象的实例变量，但是在<code>Objective-C</code>社区中如何访问内部变量却是争执不休的。有些建议仍使用属性去访问实例变量，有些建议直接访问实例变量，有些两者混用。作者强烈推荐在读取实例变量时直接访问而在设置值时使用属性访问。</p>
+<p>考虑下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@interface EOCPerson : NSObject  </div><div class="line">@property (nonatomic, copy) NSString *firstName;  </div><div class="line">@property (nonatomic, copy) NSString *lastName;  </div><div class="line"> </div><div class="line">// Convenience for firstName + &quot; &quot; + lastName:  </div><div class="line">- (NSString*)fullName;  </div><div class="line">- (void)setFullName:(NSString*)fullName;  </div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这两个便捷方法<code>fullName</code>和<code>setFullName</code>可能是这样实现的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">- (NSString*)fullName &#123;  </div><div class="line">    return [NSString stringWithFormat:@&quot;%@ %@&quot;,  </div><div class="line">            self.firstName, self.lastName];  </div><div class="line">&#125;  </div><div class="line"> </div><div class="line">/** The following assumes all full names have exactly 2  </div><div class="line"> *  parts. The method could be rewritten to support more  </div><div class="line"> *  exotic names.  </div><div class="line"> */  </div><div class="line">- (void)setFullName:(NSString*)fullName &#123;  </div><div class="line">    NSArray *components =  </div><div class="line">        [fullName componentsSeparatedByString:@&quot; &quot;];  </div><div class="line">    self.firstName = [components objectAtIndex:0];  </div><div class="line">    self.lastName = [components objectAtIndex:1];  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在<code>setter</code>和<code>getter</code>中，我们使用点语法访问实例变量。假设现在重写<code>setter</code>和<code>getter</code>方法直接访问变量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- (NSString*)fullName &#123;  </div><div class="line">    return [NSStringstringWithFormat:@&quot;%@ %@&quot;,  </div><div class="line">            _firstName, _lastName];  </div><div class="line">&#125;  </div><div class="line"> </div><div class="line">- (void)setFullName:(NSString*)fullName &#123;  </div><div class="line">    NSArray *components =  </div><div class="line">        [fullName componentsSeparatedByString:@&quot; &quot;];  </div><div class="line">    _firstName = [components objectAtIndex:0];  </div><div class="line">    _lastName = [components objectAtIndex:1];  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这两种方式是有些许差异的：</p>
+<ul>
+<li>毫无疑问直接访问实例变量是更快的，因为它不需要通过<code>Objective-C</code>方法派发(看第11节)。编译器通过代码直接访问存储对象实例的内存空间。</li>
+<li>直接调用实例变量会绕过<code>setter</code>的内存管理语义。例如，你的属性声明了<code>copy</code>特质，直接调用实例变量不会发生<code>copy</code>事件。新的值将会被保存，旧的值将会被释放。</li>
+<li>当直接访问实例变量时，KVO不会被触发。这可能会是一个问题，不过这主要取决你对这个对象的行为。</li>
+<li>通过属性访问可以更轻易的定位到与这个属性有关的问题，因为你可以给<code>setter</code>、<code>getter</code>方法添加断点去看谁在什么时候访问了这个属性。</li>
+</ul>
+<p>一个好的折中的办法是在写时通过<code>setter</code>方法设置，读时直接调用实例变量。这样做可以在读时有更高的效率，在写时也不会失去控制。最重要的是通过<code>setter</code>方法去写将保证你遵循内存管理语义。然而，这样做会有一些小的问题。</p>
+<p>第一个问题是当你的值是在初始化方法中设置的时候。这里，你应该一直使用直接调用实例变量的方法，因为子类可能重写了它的<code>setter</code>方法。考虑下<code>EOCPerson</code>有一个叫做<code>EOCSmithPerson</code>的子类，这个类是专门用于表示名字叫<code>smith</code>的。这个子类可能会覆盖<code>lastName</code>的<code>setter</code>方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- (void)setLastName:(NSString*)lastName &#123;  </div><div class="line">    if (![lastName isEqualToString:@&quot;Smith&quot;]) &#123;  </div><div class="line">        [NSException raise:NSInvalidArgumentException  </div><div class="line">                    format:@&quot;Last name must be Smith&quot;];  </div><div class="line">    &#125;  </div><div class="line">    self.lastName = lastname;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>EOCPerson</code>基类可能在初始化时将名字设为空字符。如果它通过<code>setter</code>方法去这样设置，那么子类的<code>setter</code>将会被调用并且会抛出一个异常。然而，在有一些情况中，你必须在初始化时使用<code>setter</code>方法。当实例变量是声明在一个父类中的时候；你不能通过直接调用实例变量时，那么你必须使用<code>setter</code>方法。</p>
+<p>另一个问题是当属性使用懒加载时。在这种情况下，你必须通过<code>getter</code>访问；如果没有，那个实例变量将永远不会初始化。例如，<code>EOCPerson</code>类可能有一个属性通过一个复杂对象去代表人脑。如果这个属性很少用并且初始化成本较高的，你可能在<code>getter</code>中使用懒加载，像这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (EOCBrain*)brain &#123;  </div><div class="line">    if (!_brain) &#123;  </div><div class="line">        _brain = [Brain new];  </div><div class="line">    &#125;  </div><div class="line">    return _brain;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你直接调用实例变量且没有调用过<code>getter</code>方法，大脑这个属性永远不会创建，所以你需要通过属性的存取方法去访问它。</p>
+<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>在内部使用数据时，通过直接调用实例变量来读，通过调用属性来写。</li>
+<li>在初始化和销毁中，不论读还是写都通过实例变量直接访问。</li>
+<li>当你使用了懒加载时，你需要使用属性去读。</li>
 </ul>
 ]]></content>
     
