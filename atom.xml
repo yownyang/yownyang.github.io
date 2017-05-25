@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-05-24T10:54:19.000Z</updated>
+  <updated>2017-05-25T07:40:32.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/05/14/Object,%20Messaging,%20and%20the%20Runtime/"/>
     <id>http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/</id>
     <published>2017-05-14T06:57:56.000Z</published>
-    <updated>2017-05-24T10:54:19.000Z</updated>
+    <updated>2017-05-25T07:40:32.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
 <a id="more"></a>
@@ -164,6 +164,45 @@
 <li>相同的对象，哈希码一定是相等的；但是哈希码相等，对象却不一定相等。</li>
 <li>确定你对比对象同等性时是否需要对比每个对象。</li>
 <li>编写哈希算法时，应该使用计算速度快并且碰撞几率低的算法。</li>
+</ul>
+<h3 id="使用类簇模式隐藏实现细节"><a href="#使用类簇模式隐藏实现细节" class="headerlink" title="使用类簇模式隐藏实现细节"></a>使用类簇模式隐藏实现细节</h3><p>在一个抽象基类中，使用类簇可以很好的隐藏实现细节。在<code>Objective-C</code>的系统框架中，这种模式是非常普遍的。<code>UIKit</code>中有一个例子，就是<code>iOS</code>的UI框架中的<code>UIButton</code>类。创建一个按钮，你会调用下面的方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">+ (UIButton*)buttonWithType:(UIButtonType)buttonType;</div></pre></td></tr></table></figure>
+<p>返回对象的类型取决于按钮类型。所有的子类都继承自相同的基类，即<code>UIButton</code>类。这样做使用者就不需要关心生成的按钮类型以及按钮如何绘画的具体细节。这一切只需要知道如何创建一个按钮；如何设置标题这样的属性；如何设置点击的动作。</p>
+<p>回到按钮绘画的问题上面，它可以通过使用一个类去处理所有按钮的绘画并且基于它们的类型：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- (void)drawRect:(CGRect)rect &#123;  </div><div class="line">    if (_type == TypeA) &#123;  </div><div class="line">        // Draw TypeA button  </div><div class="line">    &#125; else if (_type == TypeB) &#123;  </div><div class="line">        // Draw TypeB button  </div><div class="line">    &#125; /* ... */  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样看起来是清晰的，但是如果有许多方法基于这个类型的切换去绘制，那么这个方法就会变得非常笨重。一个好的程序员会对这进行重构，通过创建多个子类去实现特定的功能用于对应每种按钮类型。然而这样做需要使用者知道所有的子类。这时就该使用类簇模式了，这种模式提供多个子类，并通过将其实现细节隐藏在基类，用以保持头文件的干净。你不需要创建子类的实例，你通过基类创建它们即可。</p>
+<h4 id="创建一个类簇"><a href="#创建一个类簇" class="headerlink" title="创建一个类簇"></a>创建一个类簇</h4><p>有一个关于如何创建类簇的例子，考虑一个处理雇员的类，这个类包含雇员的名字和销售额以及每天该做的工作。但是每个雇员每天的工作是不一样的。管理者不关心每个雇员如何完成任务，他只会告诉每个雇员该做什么。</p>
+<p>首先，你需要定义这个基类：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">typedef NS_ENUM(NSUInteger, EOCEmployeeType) &#123;  </div><div class="line">    EOCEmployeeTypeDeveloper,  </div><div class="line">    EOCEmployeeTypeDesigner,  </div><div class="line">    EOCEmployeeTypeFinance,  </div><div class="line">&#125;;  </div><div class="line"> </div><div class="line">@interface EOCEmployee : NSObject  </div><div class="line"> </div><div class="line">@property (copy) NSString *name;  </div><div class="line">@property NSUInteger salary;  </div><div class="line"> </div><div class="line">// Helper for creating Employee objects  </div><div class="line">+ (EOCEmployee*)employeeWithType:(EOCEmployeeType)type;  </div><div class="line"> </div><div class="line">// Make Employees do their respective day&apos;s work  </div><div class="line">- (void)doADaysWork;  </div><div class="line"> </div><div class="line">@end  </div><div class="line"> </div><div class="line">@implementation EOCEmployee  </div><div class="line"> </div><div class="line">+ (EOCEmployee*)employeeWithType:(EOCEmployeeType)type &#123;  </div><div class="line">    switch (type) &#123;  </div><div class="line">        case EOCEmployeeTypeDeveloper:  </div><div class="line">            return [EOCEmployeeDeveloper new];  </div><div class="line">            break;  </div><div class="line">        case EOCEmployeeTypeDesigner:  </div><div class="line">            return [EOCEmployeeDesigner new];  </div><div class="line">            break;  </div><div class="line">        case EOCEmployeeTypeFinance:  </div><div class="line">            return [EOCEmployeeFinance new];  </div><div class="line">            break;  </div><div class="line">    &#125;  </div><div class="line">&#125;  </div><div class="line"> </div><div class="line">- (void)doADaysWork &#123;  </div><div class="line">    // Subclasses implement this.  </div><div class="line">&#125;  </div><div class="line"> </div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>每一个具体的子类继承自基类。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">@interface EOCEmployeeDeveloper : EOCEmployee  </div><div class="line">@end  </div><div class="line"> </div><div class="line">@implementation EOCEmployeeDeveloper  </div><div class="line"> </div><div class="line">- (void)doADaysWork &#123;  </div><div class="line">    [self writeCode];  </div><div class="line">&#125;  </div><div class="line"> </div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在这个例子中，这个基类实现了一个基类方法的声明，它通过雇员的类型去创建并初始化不同的实例。这个工厂模式是创建一个类簇的一种方法。</p>
+<p>不幸的是，<code>Objective-C</code>语言没有指定一个类是基类的功能。相应的，开发者通常会在这个类中写明类的用法。在这种情况下，头文件没有声明初始化方法，它意味着实例变量并不是立即创建的。另一种确定没使用基类实例的方法是在基类的<code>doADaysWork</code>方法中抛出一个异常。然而，这种做法是非常极端的并且也不是必需的。</p>
+<p>还有一个点需要注意的，当使用的对象的类是类簇的一个成员时，要注意它的类型信息(看第14节)。因为你可能认为你创建的是某个类的实例，但实际上确实它的某个子类的实例。在前面的例子中，你可能以为调用<code>[employee isMemberOfClass:[EOCEmployee class]]</code>的结果是<code>YES</code>，但<code>employee</code>其实不是<code>EOCEmployee</code>类初始化的对象，而是其子类，所以它会返回<code>NO</code>。</p>
+<h4 id="Cocoa中的类簇"><a href="#Cocoa中的类簇" class="headerlink" title="Cocoa中的类簇"></a>Cocoa中的类簇</h4><p>系统框架中有许多类簇。大多数的集合类都是类簇，例如<code>NSArray</code>和它对应的可变类<code>NSMutableArray</code>。所以，实际上它有两个基类：一个可变数组和一个不可变数组。它仍然是一个类簇但是却有两个公共接口。不可变类中定义的方法适用于所有的数组，可变类定义的方法仅适用于可变数组。实际上类簇意味着它们在实现自身时可以共享代码，以及可以在创建时把不可变数组变为可变数组，反之亦然。</p>
+<p>在<code>NSArray</code>中，当你创建一个实例时，它其实是另一个类创建的实例，这个类的用途就是占位。之后这个占位数组会转化为另一个的实例，而那个类则是<code>NSArray</code>的具体子类。这是一个很好的实现，但它超出了本书的讲解范围。</p>
+<p>理解像<code>NSArray</code>这样的类是一个类簇是重要的，因为别的原因，你可能会写出这样的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">id maybeAnArray = /* ... */;  </div><div class="line">if ([maybeAnArray class] == [NSArray class]) &#123;  </div><div class="line">        // Will never be hit  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>知道了<code>NSArray</code>是一个类簇，可以使你理解上面的代码是错误的，其中<code>if</code>语句的条件永远不可能为真。<code>[maybeAnArray class]</code>返回的类永远不可能是<code>NSArray</code>类，因为<code>NSArray</code>初始化方法返回的变量是由隐藏在类簇内部的某个隐藏类实现的。</p>
+<p>注意在类簇中对比实例变量的类是可以的。不适用之前的方法，你应该使用类型信息查询方法。第14节讲述了那些方法。替换之前类对象等同性比较方法，你因该这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">id maybeAnArray = /* ... */;  </div><div class="line">if ([maybeAnArray isKindOfClass:[NSArray class]]) &#123;  </div><div class="line">        // Will be hit  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>给类簇添加具体的子类是正常的需求，但是这么做的时候要小心。在<code>Emloyee</code>的例子中，如果没有工厂方法代码，去添加新的子类是不可能的。在<code>Cocoa</code>的类簇中，例如<code>NSArray</code>，它是可以的，但是有一些规则必须去遵守。这几条规则如下：</p>
+<ul>
+<li><p>子类应该继承自类簇的抽象基类。</p>
+<p>  在<code>NSArray</code>中，它可以继承自不可变数组的基类或者可变数组的基类。</p>
+</li>
+<li><p>子类应该定义自己的存储方式。</p>
+<p>  开发者编写<code>NSArray</code>子类时，经常在这个问题上受阻。子类必须用一个实例标量存储数组中的对象。这看起来与我们预想相反，我们以为<code>NSArray</code>自己会存储它们。但是请记住，<code>NSArray</code>仅仅是一个包在其他隐藏对象外面的壳，它只是定义了一些数组通用的接口。对于这个子类来说，可以是用<code>NSArray</code>来保存其实例。</p>
+</li>
+<li><p>子类应当覆写父类文档中指明需要覆写的方法。    </p>
+<p>  每个抽象基类都有一些方法需要子类一定实现的。在<code>NSArray</code>中，需要实现的方法有<code>count</code>和<code>objectAtIndex:</code>。另外的方法，像<code>lastObject</code>，不需要去实现，因为可以使用前两个方法实现这个方法。</p>
+</li>
+</ul>
+<p>实现子类时所需要遵循的规范一般都在类的文档中，所以你首先应该阅读它们。</p>
+<h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>类簇模式可以使用一套简单的公共接口隐藏实现的细节。</li>
+<li>类簇在系统框架中是经常使用的。</li>
+<li>在定义类簇的子类时，需要注意遵循基类的协议。如果有文档，那么首先阅读它。</li>
 </ul>
 ]]></content>
     
