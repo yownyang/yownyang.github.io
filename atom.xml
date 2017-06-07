@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-06-04T09:08:14.000Z</updated>
+  <updated>2017-06-07T06:34:34.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/05/14/Object,%20Messaging,%20and%20the%20Runtime/"/>
     <id>http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/</id>
     <published>2017-05-14T06:57:56.000Z</published>
-    <updated>2017-06-04T09:08:14.000Z</updated>
+    <updated>2017-06-07T06:34:34.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
 <a id="more"></a>
@@ -312,6 +312,38 @@ objc_AssociationPolicy policy)</code></p>
 <li>运行时的动态方法解析可以使我们给类添加我们需要使用的方法。</li>
 <li>对象可以把无法处理的选择器交给其他对象去处理。</li>
 <li>当前述步骤未处理选择器时，启动完成的转发机制。</li>
+</ul>
+<h3 id="考虑使用方法交换去调式不透明方法"><a href="#考虑使用方法交换去调式不透明方法" class="headerlink" title="考虑使用方法交换去调式不透明方法"></a>考虑使用方法交换去调式不透明方法</h3><p>在<code>Objective-C</code>中，当给对象发送消息时，它的一系列调用是发生在运行期的，第11节详细阐述了这个过程。你可能会在运行时修改给定选择器的对应方法。这是可以的。这个功能有巨大的用途，你可以使用它修改类中的方法对于某些你没有代码的方法，不需要子类和重载方法。因此，这个新的函数可以被所有类的实例使用而不仅是重载方法的子类实例。这种方法通常被称为<code>Method Swizzling</code>。</p>
+<p>一个类的方法列表中包含一个选择器名字列表用于映射，告诉动态消息系统在哪里找到给定方法的实现。这个实现是作为函数指针被存储的，叫做<code>IMP</code>s，如下面的原型：<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.3.png" alt=""></p>
+<p><strong>图2.3</strong> <code>NSString</code>的选择器表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id (*IMP)(id, SEL, ...)</div></pre></td></tr></table></figure>
+<p><code>NSString</code>类可以响应这些选择器的调用<code>lowercaseString</code>，<code>uppercaseString</code>，<code>capitalizedString</code>以及其它方法。每一个选择器指向一个不同的实现，类似于图2.3。</p>
+<p><code>Objective-C</code>运行时暴露的一些方法可以操作这张表。你可以给列表添加选择器，改变实现指向，或者交换两个选择器的实现。执行其中的一些操作，类方法表可能像图2.4。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.4.png" alt=""></p>
+<p><strong>图2.4</strong> 执行了一些操作后，<code>NSString</code>选择器的表</p>
+<p>添加了一个新的叫做<code>newSelector</code>选择器，改变了<code>capitalizedString</code>的实现，并且交换了<code>lowercaseString</code>和<code>uppercaseString</code>的实现。上述修改均无须编写子类，只要修改了方法表的布局，就会反映到程序中所有的<code>NSString</code>实例之上。怎么样，这是一个强大的功能吧。</p>
+<p>这节的话题会讲述两个方法交换的过程。这样做可以为已有方法添加新功能。在讲述如何给已有方法添加功能之前，我将先讲述如何去交换两个已经存在的方法。交换方法实现，你应该使用下面的函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">void method_exchangeImplementations(Method m1, Method m2)</div></pre></td></tr></table></figure>
+<p>这个函数中的参数用于交换。它们可以通过下面的函数获取：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Method class_getInstanceMethod(Class aClass, SEL aSelector)</div></pre></td></tr></table></figure>
+<p>这个方法使用给定的选择器在类中去检索方法。在前面的例子中，交换<code>lowercaseString</code>和<code>uppercaseString</code>的实现，需要执行下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Method originalMethod =  </div><div class="line">    class_getInstanceMethod([NSStringclass],  </div><div class="line">                            @selector(lowercaseString));  </div><div class="line">Method swappedMethod =  </div><div class="line">    class_getInstanceMethod([NSStringclass],  </div><div class="line">                            @selector(uppercaseString));  </div><div class="line">method_exchangeImplementations(originalMethod, swappedMethod);</div></pre></td></tr></table></figure>
+<p>从这时起，所有的<code>NSString</code>实例调用<code>lowercaseString</code>方法时，都会调用<code>uppercaseString</code>的实现，反之亦然：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">NSString *string = @&quot;ThIs iS tHe StRiNg&quot;;  </div><div class="line"> </div><div class="line">NSString *lowercaseString = [string lowercaseString];  </div><div class="line">NSLog(@&quot;lowercaseString = %@&quot;, lowercaseString);  </div><div class="line">// Output: lowercaseString = THIS IS THE STRING  </div><div class="line"> </div><div class="line">NSString *uppercaseString = [string uppercaseString];  </div><div class="line">NSLog(@&quot;uppercaseString = %@&quot;, uppercaseString);  </div><div class="line">// Output: uppercaseString = this is the string</div></pre></td></tr></table></figure>
+<p>上面展示了如何交换两个方法实现，但是在实际使用中，简单的交换两个实现不是非常有用的。毕竟，你为什么要交换<code>lowercaseString</code>和<code>uppercaseString</code>的实现，它们已经做的不错了。你没有任何理由去交换它们。但是同样的方法可以用来给已有的方法添加新功能。假如你想记录调用<code>lowercaseString</code>时的某些信息。同样的办法可以达到这个目的。它需要你去实现一个新的方法并包含你想要的功能，然后通过交换去替代掉原有方法。</p>
+<p>可以使用category去添加的方法，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">@interface NSString (EOCMyAdditions)  </div><div class="line">- (NSString*)eoc_myLowercaseString;  </div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这个方法与原有的<code>lowercaseString</code>方法交换，交换后的方法表如图2.5。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.5.png" alt=""></p>
+<p>新方法的实现如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">@implementation NSString (EOCMyAdditions)  </div><div class="line">- (NSString*)eoc_myLowercaseString &#123;  </div><div class="line">    NSString *lowercase = [self eoc_myLowercaseString];  </div><div class="line">    NSLog(@&quot;%@ =&gt; %@&quot;, self, lowercase);  </div><div class="line">    return lowercase;  </div><div class="line">&#125;  </div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这看起来像是会陷入递归调用的死循环，但是要记住它们的实现已经交换了。所以在运行时，当查找<code>eoc_myLowercaseString</code>选择器时，它会调用<code>lowercaseString</code>的实现。最后，交换两个方法的实现，像下面这样使用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Method originalMethod =  </div><div class="line">    class_getInstanceMethod([NSString class],  </div><div class="line">                            @selector(lowercaseString));  </div><div class="line">Method swappedMethod =  </div><div class="line">    class_getInstanceMethod([NSString class],  </div><div class="line">                            @selector(eoc_myLowercaseString));  </div><div class="line">method_exchangeImplementations(originalMethod, swappedMethod);</div></pre></td></tr></table></figure>
+<p>从现在起，所有的<code>NSString</code>实例调用<code>lowercaseString</code>方法时，都会在日志中打印出如下信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">NSString *string = @&quot;ThIs iS tHe StRiNg&quot;;  </div><div class="line">NSString *lowercaseString = [string lowercaseString];  </div><div class="line">// Output: ThIs iS tHe StRiNg =&gt; this is the string</div></pre></td></tr></table></figure>
+<p>通过这个方案，开发者可以对那些无法知道实现的方法增加日志输出，这对调试来时是非常有用的。然而此方法也应只在调试模式使用它。很少有人在全局类中使用它。不要因为你能使用它就去用它。过多的使用会使你的代码难以阅读和难以控制。</p>
+<h4 id="小结-7"><a href="#小结-7" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>在运行时可以给类中添加方法或者替换某个指定的选择器的实现。</li>
+<li>使用一个方法实现去替代另一个方法实现，叫做<code>Method Swizzling</code>，开发者通常用其为已有方法添加功能。</li>
+<li>在调试模式下，通过运行时去修改方法实现是好的做法，但是不能滥用。</li>
 </ul>
 ]]></content>
     
