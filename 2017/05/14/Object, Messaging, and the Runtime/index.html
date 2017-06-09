@@ -99,7 +99,7 @@
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.4.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.5.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.6.png">
-<meta property="og:updated_time" content="2017-06-07T09:21:57.000Z">
+<meta property="og:updated_time" content="2017-06-09T03:51:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第二章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时">
@@ -557,7 +557,7 @@
 </ul>
 <h3 id="在既有类中使用关联对象存放自定义数据"><a href="#在既有类中使用关联对象存放自定义数据" class="headerlink" title="在既有类中使用关联对象存放自定义数据"></a>在既有类中使用关联对象存放自定义数据</h3><p>有时，你想在对象中存储信息。通常，你通常会从那个对象类继承一个子类，然后使用子类去存储。然而，你不能一直这样做，因为类的实例可能是因为某种机制所创建的，并且你不能使这种机制使用你的类创建实例。这时候<code>Objective-C</code>中一个叫做<code>Associated Objects</code>的功能就派上用场了。</p>
 <p>对象关联其它对象，并使用一个键去表示它。它们使用存储策略是维持存储对象的内存管理语义。这个存储策略由<code>objc_AssociationPolicy</code>的枚举值定义，表2.1展示了它所包含的值，同事还列出了与之等价的属性的特质(第6节讲述了属性的信息)。</p>
-<p><strong>表2.1</strong> 对象关联类型<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Table%202.1.png" alt=""></p>
+<p><strong>Table 2.1</strong> 对象关联类型<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Table%202.1.png" alt=""></p>
 <p>关联对象的管理是使用下面语法实现的：</p>
 <ul>
 <li><p><code>void objc_setAssociatedObject(id object, void*key, id value, 
@@ -666,11 +666,11 @@ objc_AssociationPolicy policy)</code></p>
 </ul>
 <h3 id="考虑使用方法交换去调式不透明方法"><a href="#考虑使用方法交换去调式不透明方法" class="headerlink" title="考虑使用方法交换去调式不透明方法"></a>考虑使用方法交换去调式不透明方法</h3><p>在<code>Objective-C</code>中，当给对象发送消息时，它的一系列调用是发生在运行期的，第11节详细阐述了这个过程。你可能会在运行时修改给定选择器的对应方法。这是可以的。这个功能有巨大的用途，你可以使用它修改类中的方法对于某些你没有代码的方法，不需要子类和重载方法。因此，这个新的函数可以被所有类的实例使用而不仅是重载方法的子类实例。这种方法通常被称为<code>Method Swizzling</code>。</p>
 <p>一个类的方法列表中包含一个选择器名字列表用于映射，告诉动态消息系统在哪里找到给定方法的实现。这个实现是作为函数指针被存储的，叫做<code>IMP</code>s，如下面的原型：<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.3.png" alt=""></p>
-<p><strong>图2.3</strong> <code>NSString</code>的选择器表</p>
+<p><strong>Figure 2.3</strong> <code>NSString</code>的选择器表</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id (*IMP)(id, SEL, ...)</div></pre></td></tr></table></figure>
 <p><code>NSString</code>类可以响应这些选择器的调用<code>lowercaseString</code>，<code>uppercaseString</code>，<code>capitalizedString</code>以及其它方法。每一个选择器指向一个不同的实现，类似于图2.3。</p>
 <p><code>Objective-C</code>运行时暴露的一些方法可以操作这张表。你可以给列表添加选择器，改变实现指向，或者交换两个选择器的实现。执行其中的一些操作，类方法表可能像图2.4。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.4.png" alt=""></p>
-<p><strong>图2.4</strong> 执行了一些操作后，<code>NSString</code>选择器的表</p>
+<p><strong>Figure 2.4</strong> 执行了一些操作后，<code>NSString</code>选择器的表</p>
 <p>添加了一个新的叫做<code>newSelector</code>选择器，改变了<code>capitalizedString</code>的实现，并且交换了<code>lowercaseString</code>和<code>uppercaseString</code>的实现。上述修改均无须编写子类，只要修改了方法表的布局，就会反映到程序中所有的<code>NSString</code>实例之上。怎么样，这是一个强大的功能吧。</p>
 <p>这节的话题会讲述两个方法交换的过程。这样做可以为已有方法添加新功能。在讲述如何给已有方法添加功能之前，我将先讲述如何去交换两个已经存在的方法。交换方法实现，你应该使用下面的函数：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">void method_exchangeImplementations(Method m1, Method m2)</div></pre></td></tr></table></figure>
@@ -712,7 +712,7 @@ objc_AssociationPolicy policy)</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">typedef struct objc_class *Class;  </div><div class="line">struct objc_class &#123;  </div><div class="line">    Class isa;  </div><div class="line">    Class super_class;  </div><div class="line">    const char *name;  </div><div class="line">    long version;  </div><div class="line">    long info;  </div><div class="line">    long instance_size;  </div><div class="line">    struct objc_ivar_list *ivars;  </div><div class="line">    struct objc_method_list **methodLists;  </div><div class="line">    struct objc_cache *cache;  </div><div class="line">    struct objc_protocol_list *protocols;  </div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>这个结构体存放类的元数据，例如类实例的方法实现和实例变量。实际上这个结构体也有一个<code>isa</code>指针，并且是第一个变量，它意味着<code>Class</code>自身也是一个<code>Objective-C</code>对象。这个结构体也有另一个变量，叫做<code>super_class</code>，这个是类的父类。类的类型是另一个类，叫做元类，用来表述类对象本身所具备的元数据。类方法就定义在元类中，因为它可以理解成类对象的实例方法。每个类仅有一个类对象，每个类对象也只有一个元类。</p>
 <p>一个叫做<code>someClass</code>的类继承自<code>NSObject</code>，继承链如图2.6。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.6.png" alt=""></p>
-<p><strong>图2.6</strong> <code>SomeClass</code>的实例继承链，它继承自<code>NSObject</code>，包含元类的继承。</p>
+<p><strong>Figure 2.6</strong> <code>SomeClass</code>的实例继承链，它继承自<code>NSObject</code>，包含元类的继承。</p>
 <p><code>super_class</code>指针确立了继承关系，<code>isa</code>指针则描述了实例所属的类。你可以通过操作这个布局来执行内省(检查对象的类型)。你可以通过它找到一个对象是否可以响应某个确定的选择器并且遵循某个确定的协议，并且确定对象所属类的继承信息。</p>
 <h4 id="检查类的继承"><a href="#检查类的继承" class="headerlink" title="检查类的继承"></a>检查类的继承</h4><p>内省方法可以用作去检查类的继承。你可以使用<code>isMemberOfClass:</code>判断一个对象是否是某个确定类的实例，或者使用<code>isKindOfClass:</code>去检查某个对象是否是某个确定类或者任何继承自它的类的实例。例如：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">NSMutableDictionary *dict = [NSMutableDictionary new];  </div><div class="line">[dict isMemberOfClass:[NSDictionary class]]; ///&lt; NO </div><div class="line">[dict isMemberOfClass:[NSMutableDictionary class]]; ///&lt; YES </div><div class="line">[dict isKindOfClass:[NSDictionary class]]; ///&lt; YES </div><div class="line">[dict isKindOfClass:[NSArray class]]; ///&lt; NO</div></pre></td></tr></table></figure>
@@ -763,6 +763,10 @@ objc_AssociationPolicy policy)</code></p>
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/08/Interface and API Design/" rel="prev" title="译《Effective Objective-C 2.0》第三章">
+                译《Effective Objective-C 2.0》第三章 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -838,7 +842,7 @@ objc_AssociationPolicy policy)</code></p>
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-count">8</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

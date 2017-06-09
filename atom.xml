@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-06-07T09:21:57.000Z</updated>
+  <updated>2017-06-09T04:47:07.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,11 +16,56 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>译《Effective Objective-C 2.0》第三章</title>
+    <link href="http://yoursite.com/2017/06/08/Interface%20and%20API%20Design/"/>
+    <id>http://yoursite.com/2017/06/08/Interface and API Design/</id>
+    <published>2017-06-08T07:42:59.000Z</published>
+    <updated>2017-06-09T04:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第三章：接口和API设计</p>
+<a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>一旦你构建过一个应用程序，那么你可能会想在将来的项目中重用部分代码。你甚至可能想要发布一些代码给他人使用。即使你认为你不会这样做，你也可能在别的地方用到。当你阅读过本节，它将帮你写出合适的接口声明。这意味着你需要理解各种缺陷，才能写出标准模板一样的<code>Objective-C</code>代码。</p>
+<p>近年来，随着iOS的问世，带来了大量的开源社区和流行的组件，你经常会在自己的项目里使用别人的代码。相似的，别人也可能会使用你的代码，所以写出清晰的代码可以使别人更快、更容易的整合你的代码。并且谁也不知道，你写下的某个库会不会被成千上万的应用使用呢！</p>
+<h3 id="使用前缀名去避免命名空间冲突"><a href="#使用前缀名去避免命名空间冲突" class="headerlink" title="使用前缀名去避免命名空间冲突"></a>使用前缀名去避免命名空间冲突</h3><p>不像别的语言，<code>Objective-C</code>没有命名空间功能。由于这个原因，如果没有采取措施去避免，命名冲突是非常容易出现的。由于符号重复编译错误，命名冲突对应用的影响是可能导致项目无法链接，例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">duplicate symbol _OBJC_ETACLASS_$_EOCTheClass in:</div><div class="line">	build/something.o</div><div class="line">	build/something_else.o</div><div class="line">duplicate symbol _OBJC_CLASS_$_EOCTheClass in:</div><div class="line">	build/something.o</div><div class="line">	build/something_else.o</div></pre></td></tr></table></figure>
+<p>这个错误结果是因为某个符号在<code>EOCTheClass</code>类和其元类(看第14节)的符号表定义了两次。在应用程序的两部分代码中，同时存在<code>EOCTheClass</code>类的两个实现，那个符号也就自然会定义两次。</p>
+<p>更糟糕的是，如果在链接时没有发现某个库包含了一份重复的代码，而是在运行时加载。在这种情况下，动态加载器将会遭遇重复符号错误并且导致应用程序崩溃。</p>
+<p>仅有一种办法去避免这个问题就是去使用一个粗糙的命名空间：给所有的名字加上一个确定的前缀。这个前缀应该选择你公司名字或者应用名字或者两者结合。例如，如果你的公司名字叫做Effective Widgets，你可能决定在应用中使用<code>EWS</code>前缀，如果是<code>EWB</code>前缀，仅仅因为你的应用叫做Effective Browser。即使你加上了前缀也不会没有名称冲突，但是会减少发生的次数。</p>
+<p>如果你使用<code>Cocoa</code>创建应用程序，需要注意苹果已经表明可能会使用任意两个字母作为前缀，所以在这种情况下，你应该选择三个字母做前缀。例如，如果你不遵守这项约定并使用了<code>TW</code>作为前缀，那么将会产生问题。当<code>iOS 5.0</code>的SDK发布时，它带来了<code>Twitter</code>框架，并且选择<code>TW</code>作为前缀，有一个叫做<code>TWRequest</code>的类用于支持<code>Twitter API</code>的<code>HTTP</code>请求。如果你的公司叫做Tiny Widgets，并且有你自己用的<code>API</code>，那么你很大可能会有一个叫做<code>TWRequest</code>的类。</p>
+<p>在你的应用中，前缀不该带有类名但应该适用于所有的类。第25节讲述了如果类别基于存在的类，类别名字和方法名字前缀的重要性。另一个常被忽视的问题是与C函数的冲突或者你在类的实现文件中使用的全局变量。通常很容易忘记全局变在编译后的目标文件中是作为顶级符号出现的。例如，在<code>iOS SDK</code>中的<code>AudioToolbox</code>框架，它有一个函数用于播放一个声音文件。你可以给它一个回调从而在它结束时调用它。你可能会去写一个类，当声音文件播放结束时，去调用它，像下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line">//  EOCSoundPlayer.h</div><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@class EOCSoundPlayer;</div><div class="line">@protocol EOCSoundPlayerDelegate &lt;NSObject&gt;</div><div class="line"></div><div class="line">- (void)soundPlayerDidFinish:(EOCSoundPlayer*)player;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@interface EOCSoundPlayer : NSObject</div><div class="line">@property (nonatomic, weak) id &lt;EOCSoundPlayerDelegate&gt; delegate;</div><div class="line">- (id)initWithURL:(NSURL *)url;</div><div class="line">- (void)playSound;</div><div class="line">@end</div><div class="line"></div><div class="line">//  EOCSoundPlayer.m</div><div class="line">#import &quot;EOCSoundPlayer.h&quot;</div><div class="line">#import &lt;AudioToolbox/AudioToolbox.h&gt;</div><div class="line"></div><div class="line">void completion(SystemSoundID ssID, void *clientData) &#123;</div><div class="line">    </div><div class="line">    EOCSoundPlayer *player = (__bridge EOCSoundPlayer*)clientData;</div><div class="line">    </div><div class="line">    if ([player.delegate respondsToSelector:@selector(soundPlayerDidFinish:)]) &#123;</div><div class="line">        </div><div class="line">        [player.delegate soundPlayerDidFinish:player];</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@implementation EOCSoundPlayer &#123;</div><div class="line">    SystemSoundID _systemSoundID;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (id)initWithURL:(NSURL *)url &#123;</div><div class="line">    </div><div class="line">    if (self = [super init]) &#123;</div><div class="line">        </div><div class="line">        AudioServicesCreateSystemSoundID((__bridge CFURLRef)url,</div><div class="line">                                         &amp;_systemSoundID);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    return self;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)dealloc &#123;</div><div class="line">    </div><div class="line">    AudioServicesDisposeSystemSoundID(_systemSoundID);</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)playSound &#123;</div><div class="line">    </div><div class="line">    AudioServicesAddSystemSoundCompletion(</div><div class="line">                                          _systemSoundID,</div><div class="line">                                          NULL,</div><div class="line">                                          NULL,</div><div class="line">                                          completion,</div><div class="line">                                          (__bridge void*)self);</div><div class="line">    AudioServicesPlaySystemSound(_systemSoundID);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这看起来没什么问题，但是从这个目标文件的符号表中发现了一点不同，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">00000230 t -[EOCSoundPlayer .cxx_destruct]0000014c t -[EOCSoundPlayer dealloc]000001e0 t -[EOCSoundPlayer delegate]0000009c t -[EOCSoundPlayer initWithURL:]00000198 t -[EOCSoundPlayer playSound]00000208 t -[EOCSoundPlayer setDelegate:]00000b88 S _OBJC_CLASS_$_EOCSoundPlayer00000bb8 S _OBJC_IVAR_$_EOCSoundPlayer._delegate </div><div class="line">00000bb4 S _OBJC_IVAR_$_EOCSoundPlayer._systemSoundID </div><div class="line">00000b9c S _OBJC_METACLASS_$_EOCSoundPlayer </div><div class="line">00000000 T _completion00000bf8 s l_OBJC_$_INSTANCE_METHODS_EOCSoundPlayer </div><div class="line">00000c48 s l_OBJC_$_INSTANCE_VARIABLES_EOCSoundPlayer </div><div class="line">00000c78 s l_OBJC_$_PROP_LIST_EOCSoundPlayer00000c88 s l_OBJC_CLASS_RO_$_EOCSoundPlayer00000bd0 s l_OBJC_METACLASS_RO_$_EOCSoundPlayer</div></pre></td></tr></table></figure>
+<p>注意符号表的中间部分，有一个符号叫做_completion。它是<code>completion</code>函数创建的用于在声音播放结束时做一些事情。即使它是在实现文件实现的，并且没有在头文件声明它，它依然作为顶级符号出现在这里。因此，如果某处创建的函数也叫做<code>completion</code>，那么将会出现一个错误，像下面这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">duplicate symbol _completion in: </div><div class="line">	build/EOCSoundPlayer.o </div><div class="line">	build/EOCAnotherClass.o</div></pre></td></tr></table></figure>
+<p>更糟糕的是如果你把库给别人用，他们在自己的应用中使用它。如果你暴漏了一个类似<code>_completion</code>的符号，任何使用你这个库的人都可能会创建一个叫做<code>_completion</code>的函数，这是非常不幸的。</p>
+<p>所以你应该给它加上类似于C函数的前缀。例如，在之前的例子中，你可以将<code>completion</code>命名为<code>EOCSoundPlayerCompletion</code>。如果符号曾在回溯堆栈时出现，即使出现问题，也是异域排查的。</p>
+<p>当你使用第三方库或者将你的代码制作成库给别人使用时，你要特别小心重复符号的问题。当你在你的应用程序中使用了第三方库时，重复符号错误是容易发生的。在这种情况下，通常会使用自己的前缀去给所有的第三方库加上前缀。例如，如果你的库叫做<code>EOCLibrary</code>并且你添加了一个叫做<code>XYZLibrary</code>的库，你将给<code>XYZLibrary</code>添加<code>EOC</code>前缀。然后应用程序使用<code>XYZLibrary</code>时，就没有命名冲突的机会了，如图3.1。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%203.1.png" alt=""></p>
+<p><strong>Figure 3.1</strong> 避免第三方库两次编译：一次应用程序本身另一次是库本身</p>
+<p>仔细检查并更改所有的名字，看起来是件乏味的事情，但如果你想避免命名冲突，那是很有用的。你可能会问为什么需要这样做，并且为什么应用程序不能简单的包含<code>XYZLibrary</code>库本身并且使用它的实现。这也是可以的，但你考虑下面这个场景，你的应用程序包含另一个第三方库，叫做<code>ABCLibrary</code>，并且它也使用了<code>XYZLibrary</code>。在这种情况下，如果你和<code>ABCLibrary</code>库的作者都没有前缀，那么应用程序仍将发生重复符号的错误。或者你使用<code>XYZLibrary</code>的X版本，但是应用需要的功能是Y版本，那么它将会自动拷贝。如果你在开发的时候使用流行的第三方库，你将经常看到这种类型的前缀。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>选择一个适合的前缀，可以是公司名，应用名，或者都可以。并且一直使用这个前缀。</li>
+<li>当你使用的第三方库依赖你自己的库，考虑给它的名字加上你的前缀。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是翻译《Effective Objective-C 2.0》的第三章：接口和API设计&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Objective-C" scheme="http://yoursite.com/categories/Objective-C/"/>
+    
+    
+  </entry>
+  
+  <entry>
     <title>译《Effective Objective-C 2.0》第二章</title>
     <link href="http://yoursite.com/2017/05/14/Object,%20Messaging,%20and%20the%20Runtime/"/>
     <id>http://yoursite.com/2017/05/14/Object, Messaging, and the Runtime/</id>
     <published>2017-05-14T06:57:56.000Z</published>
-    <updated>2017-06-07T09:21:57.000Z</updated>
+    <updated>2017-06-09T03:51:23.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第二章：对象、消息、运行时</p>
 <a id="more"></a>
@@ -206,7 +251,7 @@
 </ul>
 <h3 id="在既有类中使用关联对象存放自定义数据"><a href="#在既有类中使用关联对象存放自定义数据" class="headerlink" title="在既有类中使用关联对象存放自定义数据"></a>在既有类中使用关联对象存放自定义数据</h3><p>有时，你想在对象中存储信息。通常，你通常会从那个对象类继承一个子类，然后使用子类去存储。然而，你不能一直这样做，因为类的实例可能是因为某种机制所创建的，并且你不能使这种机制使用你的类创建实例。这时候<code>Objective-C</code>中一个叫做<code>Associated Objects</code>的功能就派上用场了。</p>
 <p>对象关联其它对象，并使用一个键去表示它。它们使用存储策略是维持存储对象的内存管理语义。这个存储策略由<code>objc_AssociationPolicy</code>的枚举值定义，表2.1展示了它所包含的值，同事还列出了与之等价的属性的特质(第6节讲述了属性的信息)。</p>
-<p><strong>表2.1</strong> 对象关联类型<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Table%202.1.png" alt=""></p>
+<p><strong>Table 2.1</strong> 对象关联类型<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Table%202.1.png" alt=""></p>
 <p>关联对象的管理是使用下面语法实现的：</p>
 <ul>
 <li><p><code>void objc_setAssociatedObject(id object, void*key, id value, 
@@ -315,11 +360,11 @@ objc_AssociationPolicy policy)</code></p>
 </ul>
 <h3 id="考虑使用方法交换去调式不透明方法"><a href="#考虑使用方法交换去调式不透明方法" class="headerlink" title="考虑使用方法交换去调式不透明方法"></a>考虑使用方法交换去调式不透明方法</h3><p>在<code>Objective-C</code>中，当给对象发送消息时，它的一系列调用是发生在运行期的，第11节详细阐述了这个过程。你可能会在运行时修改给定选择器的对应方法。这是可以的。这个功能有巨大的用途，你可以使用它修改类中的方法对于某些你没有代码的方法，不需要子类和重载方法。因此，这个新的函数可以被所有类的实例使用而不仅是重载方法的子类实例。这种方法通常被称为<code>Method Swizzling</code>。</p>
 <p>一个类的方法列表中包含一个选择器名字列表用于映射，告诉动态消息系统在哪里找到给定方法的实现。这个实现是作为函数指针被存储的，叫做<code>IMP</code>s，如下面的原型：<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.3.png" alt=""></p>
-<p><strong>图2.3</strong> <code>NSString</code>的选择器表</p>
+<p><strong>Figure 2.3</strong> <code>NSString</code>的选择器表</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">id (*IMP)(id, SEL, ...)</div></pre></td></tr></table></figure>
 <p><code>NSString</code>类可以响应这些选择器的调用<code>lowercaseString</code>，<code>uppercaseString</code>，<code>capitalizedString</code>以及其它方法。每一个选择器指向一个不同的实现，类似于图2.3。</p>
 <p><code>Objective-C</code>运行时暴露的一些方法可以操作这张表。你可以给列表添加选择器，改变实现指向，或者交换两个选择器的实现。执行其中的一些操作，类方法表可能像图2.4。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.4.png" alt=""></p>
-<p><strong>图2.4</strong> 执行了一些操作后，<code>NSString</code>选择器的表</p>
+<p><strong>Figure 2.4</strong> 执行了一些操作后，<code>NSString</code>选择器的表</p>
 <p>添加了一个新的叫做<code>newSelector</code>选择器，改变了<code>capitalizedString</code>的实现，并且交换了<code>lowercaseString</code>和<code>uppercaseString</code>的实现。上述修改均无须编写子类，只要修改了方法表的布局，就会反映到程序中所有的<code>NSString</code>实例之上。怎么样，这是一个强大的功能吧。</p>
 <p>这节的话题会讲述两个方法交换的过程。这样做可以为已有方法添加新功能。在讲述如何给已有方法添加功能之前，我将先讲述如何去交换两个已经存在的方法。交换方法实现，你应该使用下面的函数：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">void method_exchangeImplementations(Method m1, Method m2)</div></pre></td></tr></table></figure>
@@ -361,7 +406,7 @@ objc_AssociationPolicy policy)</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">typedef struct objc_class *Class;  </div><div class="line">struct objc_class &#123;  </div><div class="line">    Class isa;  </div><div class="line">    Class super_class;  </div><div class="line">    const char *name;  </div><div class="line">    long version;  </div><div class="line">    long info;  </div><div class="line">    long instance_size;  </div><div class="line">    struct objc_ivar_list *ivars;  </div><div class="line">    struct objc_method_list **methodLists;  </div><div class="line">    struct objc_cache *cache;  </div><div class="line">    struct objc_protocol_list *protocols;  </div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>这个结构体存放类的元数据，例如类实例的方法实现和实例变量。实际上这个结构体也有一个<code>isa</code>指针，并且是第一个变量，它意味着<code>Class</code>自身也是一个<code>Objective-C</code>对象。这个结构体也有另一个变量，叫做<code>super_class</code>，这个是类的父类。类的类型是另一个类，叫做元类，用来表述类对象本身所具备的元数据。类方法就定义在元类中，因为它可以理解成类对象的实例方法。每个类仅有一个类对象，每个类对象也只有一个元类。</p>
 <p>一个叫做<code>someClass</code>的类继承自<code>NSObject</code>，继承链如图2.6。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%202.6.png" alt=""></p>
-<p><strong>图2.6</strong> <code>SomeClass</code>的实例继承链，它继承自<code>NSObject</code>，包含元类的继承。</p>
+<p><strong>Figure 2.6</strong> <code>SomeClass</code>的实例继承链，它继承自<code>NSObject</code>，包含元类的继承。</p>
 <p><code>super_class</code>指针确立了继承关系，<code>isa</code>指针则描述了实例所属的类。你可以通过操作这个布局来执行内省(检查对象的类型)。你可以通过它找到一个对象是否可以响应某个确定的选择器并且遵循某个确定的协议，并且确定对象所属类的继承信息。</p>
 <h4 id="检查类的继承"><a href="#检查类的继承" class="headerlink" title="检查类的继承"></a>检查类的继承</h4><p>内省方法可以用作去检查类的继承。你可以使用<code>isMemberOfClass:</code>判断一个对象是否是某个确定类的实例，或者使用<code>isKindOfClass:</code>去检查某个对象是否是某个确定类或者任何继承自它的类的实例。例如：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">NSMutableDictionary *dict = [NSMutableDictionary new];  </div><div class="line">[dict isMemberOfClass:[NSDictionary class]]; ///&lt; NO </div><div class="line">[dict isMemberOfClass:[NSMutableDictionary class]]; ///&lt; YES </div><div class="line">[dict isKindOfClass:[NSDictionary class]]; ///&lt; YES </div><div class="line">[dict isKindOfClass:[NSArray class]]; ///&lt; NO</div></pre></td></tr></table></figure>
