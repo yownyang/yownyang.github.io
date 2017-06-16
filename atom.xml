@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-06-16T07:30:23.000Z</updated>
+  <updated>2017-06-16T12:38:27.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/06/08/Interface%20and%20API%20Design/"/>
     <id>http://yoursite.com/2017/06/08/Interface and API Design/</id>
     <published>2017-06-08T07:42:59.000Z</published>
-    <updated>2017-06-16T07:30:23.000Z</updated>
+    <updated>2017-06-16T12:38:27.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第三章：接口和API设计</p>
 <a id="more"></a>
@@ -151,6 +151,84 @@
 <li>尽量创建不可变对象。</li>
 <li>如果属性需要在内部设置，那么暴露给外部的应该设置为只读，在类别中设置为读写。</li>
 <li>通过方法去操作可变集合，而不是直接暴漏可变集合本身。</li>
+</ul>
+<h3 id="使用清晰而协调的命名方式"><a href="#使用清晰而协调的命名方式" class="headerlink" title="使用清晰而协调的命名方式"></a>使用清晰而协调的命名方式</h3><p>在<code>Objective-C</code>中，类的命名，方法的命名，变量的命名等等都是重要的因素。新手总是说语言冗长，因为使用的语法结构可以像自然语言一样阅读。命名的时候常常包括一些介词(in、for、with等等)，而别的语言经常忽略这些。例如，考虑下面的代码段：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">NSString *text = @&quot;The quick brown fox jumped over the lazy dog&quot;;</div><div class="line">NSString *newText = [text stringByReplacingOccurrencesOfString:@&quot;fox&quot; withString:@&quot;cat&quot;];</div></pre></td></tr></table></figure>
+<p>上述代码经常被认为是把一个简单的表达式复杂成了一句啰嗦的话。毕竟，执行的替换方法长达48个字符。但是它读起来像一句话：“使用<code>cat</code>字符串替换<code>text</code>字符串中的<code>fox</code>字符串并且赋值给一个新的字符串。”</p>
+<p>这句话完美的表达了正在发生的事情。在不冗长的语言中，大概是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">string text = &quot;The quick brown fox jumped over the lazy dog&quot;;</div><div class="line">string newText = text.replace(&quot;fox&quot;, &quot;cat&quot;);</div></pre></td></tr></table></figure>
+<p>但是上面的命令中，<code>text.replace</code>的参数是什么意思？<code>fox</code>字符串替代<code>cat</code>，还是相反？而且，替换函数替换所有字符还是第一个？这非常不清晰。虽然<code>Objective-C</code>的语法更长，但是却非常清晰。</p>
+<p>你还会注意到不论是变量名还是方法名，使用的都是首字母小写的骆驼式命名法。另外，类名是以大写字母开头并且带有两个或者三个字符的前缀（看第15节）。这个风格遍布整个<code>Objective-C</code>代码。如果你愿意你可以使用你自己的风格，但是在<code>Objective-C</code>中骆驼风格将确保你命名的健壮。</p>
+<h4 id="方法命名"><a href="#方法命名" class="headerlink" title="方法命名"></a>方法命名</h4><p>如果你之前学过别的语言，例如<code>C++</code>或者<code>Java</code>，你习惯于函数命名的简洁，并且必须查看函数原型以确定参数做什么。然而，这使得代码难以阅读，因为你经常需要返回原型来记住函数的作用。例如，考虑一个代表范围的类。在<code>C++</code>中，你可能这样定义它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">class Rectangle &#123;</div><div class="line">public:</div><div class="line">    Rectangle(float width, float height);</div><div class="line">    float getWidth();</div><div class="line">    float getHeight();</div><div class="line">private:</div><div class="line">    float width;</div><div class="line">    float height;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>如果你不熟悉<code>C++</code>，那也没关系。你只需要意识到有一个叫做<code>Rectangle</code>的类，里面有两个实例变量，宽和高。它也有一个接受宽和高的方法用于创建类的实例，叫做构造器。它也有宽高的访问方法。当使用这个类时，你会这样创建实例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Rectangle *aRectangle = new Rectangle(5.0f, 10.0f);</div></pre></td></tr></table></figure>
+<p>当你回头看这些代码时，你不能清楚的知道<code>5.0f</code>和<code>10.0f</code>代表什么。你大概可以猜到它是构成矩形的宽高，但你知道第一个参数是宽还是高？你需要回头去看看定义的构造方法。</p>
+<p><code>Objective-C</code>通过更长的方法命名解决了这个问题。与上述<code>C++</code>代码等价的<code>Objective-C</code>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interface EOCRectangle : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, assign, readonly) float width;</div><div class="line">@property (nonatomic, assign, readonly) float height;</div><div class="line"></div><div class="line">- (id)initWithSize:(float)width :(float)height;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这样的写法可以轻松的知道等价的构造器方法和方法名叫做<code>initWithSize:</code>。你可能认为它很奇怪或者在第二个参数的冒号前面没有字符是语法错误的。实际上，语法是非常合理的，但它犯了和<code>C++</code>函数命名一样的毛病。如果你使用这个类，你会在相同的位置看到这个问题:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">EOCRectangle *aRectangle = </div><div class="line">	[[EOCRectangle alloc] initWithSize:5.0f :10.0f];</div></pre></td></tr></table></figure>
+<p>一个更好的写法是像下面这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (id)initWithWidth:(float)width andHeight:(float)height;</div></pre></td></tr></table></figure>
+<p>这是冗长的，但对于使用时，每个变量的意思都是清晰的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">EOCRectangle *aRectangle =	[[EOCRectangle alloc] initWithWidth:5.0f andHeight:10.0f];</div></pre></td></tr></table></figure>
+<p>新手往往很难使用<code>Objective-C</code>冗长的命名，尽管冗长的命名可以增加代码的可读性。不要害怕使用长的方法名。确保方法名是他们需要表达的，但不是让你使用极长的命名。你的方法名应该统一和清晰。</p>
+<p>以<code>EOCRectangle</code>类为例子。好的方法命名像下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- (EOCRectangle*)unionRectangle:(EOCRectangle*)rectangle</div><div class="line">- (float)area</div></pre></td></tr></table></figure>
+<p>不好的的方法命名像下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- (EOCRectangle*)union:(EOCRectangle*)rectangle // Unclear</div><div class="line">- (float)calculateTheArea // Too verbose</div></pre></td></tr></table></figure>
+<p>清楚地方法命名就像读一篇文章一样，从左到右阅读。遵循方法命名规则并不是强制的，但这样做将会确保你的代码易于维护和被其他人阅读。</p>
+<p><code>NSString</code>类是一个好的命名示例，它遵循了良好的命名规则。这有一些它的方法以及为什么这样命名的解释：</p>
+<p><strong>+ string</strong></p>
+<p>这是一个工厂方法，用于创建一个新的空字符串。通过方法名表示返回值。</p>
+<p><strong>+ stringWithString:</strong> </p>
+<p>这是一个工厂方法，使用另一个字符串创建一个新的字符串。同创建空的字符串的工厂方法一样，它通过方法名的第一个单词表示返回值。</p>
+<p><strong>+ localizedStringWithFormat:</strong></p>
+<p>这是一个工厂方法，使用指定的格式去创建一个本地化的字符串。它的返回值是方法名的第二个单词，这是因为对返回类型进行修饰是合理的。尽管它返回的仍然是字符串，但它是一种更具体的字符串，因为它已经本地化了。</p>
+<p><strong>- lowercaseString</strong></p>
+<p>将一个字符的所有字符转化为小写。它创建了一个新的字符串而不是转化者本身，因此它遵循返回类型作为方法名的一部分的规则。不过修饰符仍应在类型之前。</p>
+<p><strong>- intValue</strong></p>
+<p>将字符串解析为整数。因为它的返回类型是<code>int</code>，所以它的第一个单词是<code>int</code>。通常你不会缩写类型。例如<code>string</code>不会缩写成<code>str</code>。<code>int</code>是类型名字，所以方法名的后缀带有<code>value</code>而不是单一单词。单一单词通常用在属性上面。因为<code>int</code>不是属性，所以添加<code>value</code>限制它。</p>
+<p><strong>- length</strong></p>
+<p>获取字符串的长度。这是一个单独的短语，因为它实际上是一个字符串的属性。对于这个方法有一个不好的名字，叫做<code>stringLength</code>。<code>string</code>这个单词是多余的，因为这个方法的接收者本身就是个字符串。</p>
+<p><strong>- lengthOfBytesUsingEncoding:</strong></p>
+<p>获取使用给定编码方式编码的字节数组长度。这与<code>length</code>方法类似，所以可以用同样的理由解释。另外，这个方法需要一个参数。方法名称在描述其类型的名词之后立即放置参数。</p>
+<p><strong>- getCharacters:range:</strong></p>
+<p>在字符串的给定范围内获取单个字符。这是一个例子，因为这不是一个访问方法，所以添加<code>get</code>前缀，不像一些其他的语言。这里使用的原因是字符是通过作为第一个参数传入的数组返回的。完整的方法签名如下：</p>
+<p><strong>- (void)getCharacters:(unichar*)buffer range:(NSRange)aRange</strong></p>
+<p>第一个参数，缓冲区，应该是指向足够容纳所请求范围内字符的数组的指针。该方法通过一个参数（通常称为<code>out-parameter</code>）返回，而不是通过返回值，因为它从内存管理角度更有意义。该方法的调用者处理所有内存管理，而不是由方法执行创建，并要求调用方释放它。第二个参数是以名词描述其类型，就像正常参数一样。有时，这些参数名前面都有一个介词；例如，这个方法可以叫做<code>getCharacters:inRange:</code>。如果参数超过其他参数需要额外的意义，通常是这样做的。</p>
+<p><strong>- hasPrefix:</strong></p>
+<p>确定字符串前缀是否是给定字符。它的返回值是一个Bool值，所以通常这样使用它，像读句子一样。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[@&quot;Effective Objective-C&quot; hasPrefix:@&quot;Effective&quot;] == YES</div></pre></td></tr></table></figure>
+<p>如果方法名是<code>prefix:</code>，它不容易理解的。相似的，如果是<code>isPrefixedWith:</code>，它是太长的并且听起来也过于笨拙。</p>
+<p><strong>- isEqualToString:</strong></p>
+<p>确定两个字符串是否相等。它的返回值是一个Bool值，就像上面的<code>hasPrefix:</code>方法一样，方法的名称确保该方法像句子一样阅读。另一个使用<code>is</code>前缀的地方是Bool属性。如果属性名是<code>enabled</code>，例如它的访问方法是<code>setEnabled:</code>和<code>isEnabled</code>。总之，遵循一些规则将帮助你给方法命名。</p>
+<ul>
+<li>如果方法返回一个新值，那么方法的第一个单词应该是它的类型，除非它需要一个修饰词，例如<code>localizedString</code>方法。这个规则不适用于属性访问器，因为他们在逻辑上没有创建一个新的对象。即使它们可能会返回一个拷贝的内部对象。这些访问器方法代表属性本身。</li>
+<li>一个参数应该紧挨着一个描述它类型的名词。</li>
+<li>如果一个对象需要参数来执行操作，那么导致对象上发生动作的方法应该包含一个动词，然后是一个名词（或多个名词）。</li>
+<li>不要使用缩写，例如<code>str</code>，使用全名，例如<code>string</code>。</li>
+<li>Bool属性的前缀应该使用<code>is</code>。方法返回一个Bool值但不应该直接返回属性应该带有<code>has</code>或者<code>is</code>前缀，这取决于你使用的场景。</li>
+<li>使用前缀<code>get</code>的方法，返回值应该是某个输出参数，例如填充C风格的数组。</li>
+</ul>
+<h4 id="类名和协议名"><a href="#类名和协议名" class="headerlink" title="类名和协议名"></a>类名和协议名</h4><p>应该给类和协议提供前缀以避免命名空间冲突（看第15节）并且应该结构化，使它们从左到右阅读，就像方法一样。例如，<code>NSArray</code>类和它的对应可变类<code>NSMutableArray</code>，<code>mutable</code>应该在<code>array</code>之前，因为它描述了一个指定的类型。</p>
+<p>为了说明命名惯例，考虑下面<code>UIKit</code>中的类：</p>
+<p><strong>UIView (class)</strong></p>
+<p>所有的视图都继承自这个类。它们是用户界面的构建块，执行按钮、文本字段和表的绘制。类的名字是对它的解释以及整个<code>UIKit</code>框架的<code>UI</code>前缀。</p>
+<p><strong>UIViewController (class)</strong></p>
+<p>一个视图处理绘画视图但不负责控制在视图中显示。这就是这个类的工作：一个“视图控制器”。它以这样的方式命名，它保持左到右可读性。</p>
+<p><strong>UITableView (class)</strong></p>
+<p>这是一个特定的视图，用于显示列表数据。所以给父类名字添加特定前缀来区别视图的种类。在命名管理中，使用给父类加前缀是常见的。它可以被命名为<code>UITable</code>，但这样不能清除的指出它是一个视图。你需要查找接口声明以确定它是什么。如果你要创建一个表格视图用于显示图像，你可以创建一个子类叫做<code>EOCImageTableView</code>。例如，你总是使用自己的前缀，而不是父类的前缀。原因是你没有权利向另一个框架的命名空间添加一些东西，而另一个框架可能决定在将来创建一个同名的类。</p>
+<p><strong>UITableViewController (class)</strong></p>
+<p>正如表格是一种特定的视图，这是一种特殊的视图控制器专门设计用来控制表格视图。因此，它以类似的方式命名。</p>
+<p><strong>UITableViewDelegate (protocol)</strong></p>
+<p>该协议定义了一个接口，通过该接口，表格视图可以与另一个对象通信，并以它定义委托接口的类命名，从而保证了正确的可读性。（关于委托模式的更多信息，请参阅项目23）。</p>
+<p>最重要的是，你应该使你的命名保持一致。另外，如果你的类在另一个框架，确保遵守命名约定。例如，你创建一个视图的子类，那么类名的后缀应该加上<code>view</code>。类似地，如果创建了自己的委托协议，则应该将它命名为它代表的类，带有<code>Delegate</code>后缀。坚持这种命名结构将确保当你或其他人稍后使用它时，你的代码是易懂的。</p>
+<h4 id="小结-4"><a href="#小结-4" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>创建接口时，遵循<code>Objective-C</code>的命名规则，接口将会是健壮的。</li>
+<li>确保方法名称简洁而精确，并使其使用像阅读句子一样从左向右。</li>
+<li>在方法命中避免使用类型缩写。</li>
+<li>最重要的是，确保你自己的代码中方法名的一致性。</li>
 </ul>
 ]]></content>
     
