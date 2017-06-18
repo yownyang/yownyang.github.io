@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-06-16T12:38:27.000Z</updated>
+  <updated>2017-06-18T06:29:18.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/06/08/Interface%20and%20API%20Design/"/>
     <id>http://yoursite.com/2017/06/08/Interface and API Design/</id>
     <published>2017-06-08T07:42:59.000Z</published>
-    <updated>2017-06-16T12:38:27.000Z</updated>
+    <updated>2017-06-18T06:29:18.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第三章：接口和API设计</p>
 <a id="more"></a>
@@ -229,6 +229,21 @@
 <li>确保方法名称简洁而精确，并使其使用像阅读句子一样从左向右。</li>
 <li>在方法命中避免使用类型缩写。</li>
 <li>最重要的是，确保你自己的代码中方法名的一致性。</li>
+</ul>
+<h3 id="为私有方法名加前缀"><a href="#为私有方法名加前缀" class="headerlink" title="为私有方法名加前缀"></a>为私有方法名加前缀</h3><p>一个类做的事情远比外部调用多的多。编写类实现时，通常会编写一些给类内部使用的方法。对于这样的方法，我建议给它们的名称加上前缀。通过将公共方法与私有方法区分开来，有助于调试。</p>
+<p>给私有方法加标记的另一个原因是在修改方法名时易于区分。如果一个方法是公开的，那么修改它时应该加倍小心，因为可能对外部造成影响。因此，这个类的使用者也需要进行修改。但是，如果该方法是内部方法，则只有类自己的代码需要更改，对公开的API没有影响。对私有方法进行标记意味着在进行这种更改时很容易看出区别。</p>
+<p>要使用什么样的前缀看你个人喜好，但我有一个好的选择是前缀包含一个字母<code>p</code>和<code>_</code>。因为<code>p</code>代表<code>private</code>，<code>_</code>在方法名开始之前有了视觉的差距。方法名仍继续使用骆驼命名法，即第一个字母小写。例如，一个叫做<code>EOCObject</code>的类，它的私有方法可能是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interface EOCObject : NSObject</div><div class="line"></div><div class="line">- (void)publicMethod;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@implementation EOCObject</div><div class="line"></div><div class="line">- (void)publicMethod &#123; /* ... */</div><div class="line">    </div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)p_privateMethod &#123; /* ... */</div><div class="line">    </div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>与公共方法不同，私有方法不会出现在接口定义中。有时，您希望在类扩展中声明私有方法（看第27节）；然而，最近的编译器修改意味着在使用方法之前不需要声明它。通常，私有方法只能在它们的实现中声明。</p>
+<p>如果你是从<code>C++</code>或者<code>Java</code>转行过来的，你可能会很疑问为什么只加前缀，而不是声明它为私有方法。在目标<code>Objective-C</code>中，没有办法将方法标记为私有的。所有的对象都能相应所有的消息(看第12节)，并且可以在运行时决定是否相应某个消息(看第14节)。<code>Objective-C</code>是在运行时执行给定消息的查找的，并且没有机制去限制什么东西、什么时候、什么范围影响消息。只剩下命名约定来指定语义，如私有方法。新手可能对这种方式感到不太舒服，但<code>Objective-C</code>就是这样一门语言，需要你去接受它的动态性和活力。但是动态性也是需要规则的，使用命名约定是实现这一目标的一种方法。</p>
+<p>苹果倾向于使用单一下划线来作为它私有方法的前缀。所以你可能认为遵循苹果的提示并使用下划线是个好主意。然而，这有一个潜在的灾难性的问题；如果你继承了一个苹果的类，并在这个子类中使用了这种方法，你可能会无意中覆盖苹果的一个私有方法。基于这个原因，苹果已经说明了你应该避免使用下划线作为前缀。动态方法调度，从无法给方法指定作用域这点来看，这是不好的地方，但从另一方面看，它又是强大的。</p>
+<p>覆盖苹果私有方法这种情况是常有的，例如，如果你正在创建一个<code>iOS</code>应用的视图控制器，你需要子类化<code>UIViewController</code>。视图控制器可以有很多状态，你需要一个清楚所有状态的方法，当你的控制器出现在屏幕上时，调用这个方法。因此，你可能会实现这样的方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">#import &lt;UIKit/UIKit.h&gt;</div><div class="line"></div><div class="line">@interface EOCViewController : UIViewController</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@implementation EOCViewController</div><div class="line"></div><div class="line">- (void)_resetViewController &#123;</div><div class="line">    // Reset state and views</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>然而，<code>UIViewController</code>也实现了一个叫做<code>_resetViewController</code>的私有方法。从你写了这个私有方法开始，当你调用它时，总是会调用<code>EOCViewController</code>的这个方法，而不是<code>UIViewController</code>的。除非你深入了解这个库，否则你不会你知道这一点，因为这个方法并未暴漏出来。毕竟，这是一种用下划线表示的私有方法。在这种情况下，你的视图控制器可能会发生一些奇怪的事情，因为<code>UIViewController</code>的实现未被调用，或者你会诧异为什么这个方法的调用次数过于频繁。</p>
+<p>总之，当你在一个既不是苹果也不是你自己的框架中对类进行子类化时，除非文档说明，否则你无法知道框架使用的什么私有前缀（如果有的话）。在这种情况下，你可以选择使用你的类前缀（看第15节）作为私有方法前缀，从而大大减少潜在冲突的风险。同样，你也应该考虑其他人也可能会子类化你的类。这就是为什么你应该为私有方法名添加前缀。如果没有实现的源代码，除非使用非常复杂的工具，否则没有办法找出类实现的私有方法。</p>
+<h4 id="小结-5"><a href="#小结-5" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>给私有方法名添加前缀，这样很容易与公共方法区别开来。</li>
+<li>避免使用单个下划线作为方法前缀，因为这是由苹果使用的。</li>
 </ul>
 ]]></content>
     
