@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.1.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.2.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.3.png">
-<meta property="og:updated_time" content="2017-06-25T07:43:09.000Z">
+<meta property="og:updated_time" content="2017-06-25T07:46:22.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第四章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第四章：协议和分类">
@@ -379,7 +379,7 @@
 <p>例如，有一个类是从网络获取数据的。这个类从远端服务器获得数据。服务器可能需要花费很多时间才会相应，如果一直处在等待中，这是一种坏的体验。所以，通常会使用委托模式，这个网络类会有一个协议对象，并且当数据返回时，回调这个对象。图4.1展示了这个概念；<code>EOCDataModel</code>对象是被委托类，<code>EOCNetworkFetcher</code>是委托类。<code>EOCDataModel</code>让<code>EOCNetworkFetcher</code>执行一个异步任务，当任务执行完毕时，<code>EOCNetworkFetcher</code>调用这个委托。<img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.1.png" alt=""></p>
 <p><strong>Figure 4.1</strong> 一次委托回调的流程。注意委托对象并不需要一定是<code>EOCDataModel</code>实例，也可以是另外的实例。</p>
 <p>使用<code>Objective-C</code>的协议可以很容易的实现这个模式。像图4.1这种情况，这个协议可能是这样定义的:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@protocol EOCNetworkFetcherDelegate- (void)networkFetcher:(EOCNetworkFetcher*)fetcherdidReceiveData:(NSData*)data;- (void)networkFetcher:(EOCNetworkFetcher*)fetcherdidFailWithError:(NSError*)error;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@protocol EOCNetworkFetcherDelegate</div><div class="line"></div><div class="line">- (void)networkFetcher:(EOCNetworkFetcher*)fetcher</div><div class="line">        didReceiveData:(NSData*)data;</div><div class="line">- (void)networkFetcher:(EOCNetworkFetcher*)fetcher</div><div class="line">      didFailWithError:(NSError*)error;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
 <p>一个委托协议的命名通常是类名后面追加<code>delegate</code>，整个名字使用骆驼命名法。给你的委托协议使用这种命名法可以使任何使用者都感到熟悉。</p>
 <p>类会使用协议声明一个属性用于存放被委托者。在我们的例子中， 定义属性的类就是<code>EOCNetworkFetcher</code>类。因此，这个类的接口是这样的：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">@interface EOCNetworkFetcher : NSObject</div><div class="line">@property (nonatomic, weak) id &lt;EOCNetworkFetcherDelegate&gt; delegate;</div><div class="line">@end</div></pre></td></tr></table></figure>
