@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.1.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.2.png">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%204.3.png">
-<meta property="og:updated_time" content="2017-06-26T08:41:43.000Z">
+<meta property="og:updated_time" content="2017-06-26T10:09:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第四章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第四章：协议和分类">
@@ -450,6 +450,20 @@
 <li>使用类别分隔某个类，使其易于管理。</li>
 <li>创建一个私有类别用于隐藏那些不该暴漏的方法。</li>
 </ul>
+<h3 id="总是为第三方类的分类名称加前缀"><a href="#总是为第三方类的分类名称加前缀" class="headerlink" title="总是为第三方类的分类名称加前缀"></a>总是为第三方类的分类名称加前缀</h3><p>类别通常被用做给已存在的但无源码的类添加功能。这是一个非常有用的功能，但是这样做也很容易出问题。产生问题的原因是如果类本身有某个方法，而分类又实现了这个方法，那么类本身的方法将会被覆盖。在运行时会将分类中的每个方法加入到类的方法列表中。如果类中有这个方法，而分类又实现一次，那么分类中的方法就会覆盖类中的。实际上这个问题可能会发生不止一次，因为某个类别覆盖了类的本身实现，别的类别覆盖了上个类别。那么调用时将会调用最后一个覆盖的方法。</p>
+<p>例如，你创建一个<code>NSString</code>的类别，并提供一些用于处理<code>HTTP URL</code>的方法。你可能会这样定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@interface NSString (HTTP)</div><div class="line">// Encode a string with URL encoding</div><div class="line">- (NSString*)urlEncodedString;</div><div class="line">// Decode a URL encoded string</div><div class="line">- (NSString*)urlDecodedString;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>这看起来非常好啊，但是考虑一下如果另一个类别也给<code>NSString</code>添加了同样的方法。第二个类别也添加了一个叫做<code>urlEncodedString</code>的方法，但是实现却与你的类别有些微差异。如果那个类别在你的类别之后加载，那么调用方法时将会调用第二个类别的。这会导致你的代码不能正确的工作，并且会得到意料之外的结果。这种问题是难以排查的，因为你不知道实际上你的方法并没有运行。</p>
+<p>解决这种问题，一般的做法是使用命名空间区分类别和类别中的方法。而<code>Obejective-C</code>中命名空间的做法是给相关名称加上前缀。就像之前给类添加前缀一样，给分类选择前缀也要选择恰当才行。通常，前缀名与你的应用名或者库名相同。因此，<code>NSString</code>类别加上<code>ABC</code>前缀之后大概是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@interface NSString (ABC_HTTP)</div><div class="line"></div><div class="line">// Encode a string with URL encoding</div><div class="line">- (NSString*)abc_urlEncodedString;</div><div class="line">// Decode a URL encoded string</div><div class="line">- (NSString*)abc_urlDecodedString;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>从技术上讲，并不一定需要把类别名称加前缀。两个同名类别不会出现问题。但是这是不好的，因为编译器会发出这样的编译警告：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">warning: duplicate definition of category &apos;HTTP&apos; on interface &apos;NSString&apos;</div></pre></td></tr></table></figure>
+<p>即使这样也可能会有别的类别覆盖你的方法，但是这样做可以大大减少这种情况，因为别的类和你使用相同的前缀名是不太可能的。这样做也能避免类的开发者以后更新类的时候覆盖你的方法。例如，如果苹果给<code>NSString</code>添加了<code>urlEncodedString</code>方法，而你的方法又没有增加前缀，那么你将覆盖苹果的方法。这是不合适的，因为别的<code>NSString</code>类的使用者想得到的结果是苹果的代码输出，而非你的返回结果。或者苹果实现的方法带有一些别的效果，你的方法如果覆盖了苹果的方法并且没有响应的效果，那么就会产生难以排查的问题。</p>
+<p>此外要记住的是你使用分类给某个类添加的方法，该类的每一个实例都可以调用。如果你给系统提供的类添加功能，例如<code>NSString、NSArra、NSNumber</code>，那么即使这些类的实例不是由你的代码初始化出来的，它们也可以调用你添加的方法。如果你无意中把自己类别中的方法起的和其他分类或者第三方库一样，那么将会产生难以预料的问题，因为你以为执行的是自己的方法，但是实际上却不是。同样的，使用类别故意覆盖方法也是不好的，尤其是当你的方法是以类库形式提供给别人使用时，而他们又要依赖系统中的功能。如果其他开发者覆盖相同的方法，那么就更不能确定到底运行的是哪个类别的方法了。这又一次说明了给类别方法使用命名空间的重要性。</p>
+<h4 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>向第三方类中添加分类时，总应给你的分类加上相应的前缀。</li>
+<li>向第三方类中添加分类时，总应给你分类中的方法加上相应的前缀。</li>
+</ul>
 
       
     </div>
@@ -637,7 +651,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过委托与数据源协议进行对象间通信"><span class="nav-number">2.</span> <span class="nav-text">通过委托与数据源协议进行对象间通信</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用便于管理的分类分散类的实现代码"><span class="nav-number">3.</span> <span class="nav-text">使用便于管理的分类分散类的实现代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">3.1.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过委托与数据源协议进行对象间通信"><span class="nav-number">2.</span> <span class="nav-text">通过委托与数据源协议进行对象间通信</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用便于管理的分类分散类的实现代码"><span class="nav-number">3.</span> <span class="nav-text">使用便于管理的分类分散类的实现代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">3.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总是为第三方类的分类名称加前缀"><span class="nav-number">4.</span> <span class="nav-text">总是为第三方类的分类名称加前缀</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-2"><span class="nav-number">4.1.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
             
 
           </div>
