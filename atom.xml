@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-05T10:17:42.000Z</updated>
+  <updated>2017-07-06T06:23:13.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/07/01/Memory%20Management/"/>
     <id>http://yoursite.com/2017/07/01/Memory Management/</id>
     <published>2017-07-01T09:55:58.000Z</published>
-    <updated>2017-07-05T10:17:42.000Z</updated>
+    <updated>2017-07-06T06:23:13.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第五章：内存管理</p>
 <a id="more"></a>
@@ -145,6 +145,31 @@
 <li>ARC管理对象生命周期的办法就是在合适地方插入<code>retain</code>或者<code>release</code>。ARC下变量可以通过修饰符去改变内存管理语义，MRC下只能手动进行<code>retain</code>或者<code>release</code>。</li>
 <li>方法名字已经指出了返回对象的内存管理语义。ARC将这些规则确定为必须遵守的规则。</li>
 <li>ARC仅能处理<code>Objective-C</code>对象。特别是不能处理<code>CoreFoundation</code>的对象，它们必须使用<code>CFRetain/CFRelease</code>去处理。</li>
+</ul>
+<h3 id="在deaclloc中释放引用并清除监听状态"><a href="#在deaclloc中释放引用并清除监听状态" class="headerlink" title="在deaclloc中释放引用并清除监听状态"></a>在deaclloc中释放引用并清除监听状态</h3><p>一个对象走完生命周期后会被释放，那个释放的入口就是<code>dealloc</code>方法。在对象的整个生命周期中，释放只会被调用一次，当对象的引用计数为0时。不过什么时候调用就不知道了。也就是说，你可能通过你手动调用<code>retain</code>或<code>release</code>大概推测出它什么时候调用，但其实这是由系统决定的，它会在你不知道的时候进行释放。你永远不该调用<code>dealloc</code>本身。系统会在运行时在正确时间调用它。而且<code>dealloc</code>被调用后，对象都不再有效，后面的方法也是无效的。</p>
+<p>那么你应该在<code>dealloc</code>中做什么呢？主要要做的应该是释放对象的所有持有。这个意思是释放所有的<code>Objective-C</code>对象，ARC会自动帮你添加进<code>dealloc</code>方法，通过自动生成<code>.cxx_destrucr</code>(看第30节)方法。任何非<code>Objective-C</code>也应该在这里释放。例如，<code>CoreFoundation</code>的对象需要释放，因为它是纯C的API。</p>
+<p>另一个需要在<code>dealloc</code>中做的事情是清除所有的观察者行为。如果有对象注册了通知者，那么这里是一个移除通知的好地方。这样就不会向这个对象发送通知了，否则会导致应用程序崩溃。</p>
+<p>一个<code>dealloc</code>方法大概像这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">- (void)dealloc &#123;</div><div class="line">   </div><div class="line">    CFRelease(coreFoundationObject);</div><div class="line">    [[NSNotificationCenter defaultCenter] removeObserver:self];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意当你使用MRC而不是ARC时，你应该在这些方法后面调用<code>[super dealloc]</code>。ARC会自动在后面调用，这也是一个ARC比MRC安全简单的原因。并且使用MRC，你不得不讲每个需要释放的<code>Objective-C</code>对象添加进来。</p>
+<p>即便如此，你不应该在这里释放开销较大或者系统的稀缺资源。例如文件描述符，套接字，大块内存。你不应该依赖<code>dealloc</code>方法去释放这些对象，因为有时候别的东西也会持有这些对象。这样会造成你不需要某个系统稀缺资源，但是却还在持有它，这是不合理的。通常的做法是当程序不再使用它时，实现别的办法进行释放。这样资源的声明周期就是明确的了。</p>
+<p>比如一个管理套接字链接的对象，它需要有清理的方法。或许是一个数据库链接。这样类的接口大概是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@interface EOCServerConnection : NSObject</div><div class="line"></div><div class="line">- (void)open:(NSString*)address;</div><div class="line">- (void)close;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>当需要使用时，可以调用<code>open</code>方法打开链接；当链接结束时，可以调用<code>close</code>方法。<code>close</code>方法一定要在链接对象释放前调用；否则，会被认为是一个项目错误，就像你不得不使用<code>retain</code>和<code>release</code>去平衡引用计数一样。</p>
+<p>另一个在别的清理方法释放资源的理由是实际上对象的<code>dealloc</code>方法不一定会被调用。边界情况下，当程序意外退出时，对象可能仍然存在。这些对象没有接收到释放信息。相应的，当系统终止后，它们占用的资源也会返回给系统。所以不调用<code>dealloc</code>方法也是一种优化。这也说明不是每个对象都会调用释放方法的。在Mac OS X和iOS中都有一个应用的协议方法，当程序结束时会调用。这个方法可以被用来清理某些必须要清理的对象。</p>
+<p>在Mac OS X中，程序结束会调用的协议方法是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (void)applicationWillTerminate:(NSNotification *)notification;</div></pre></td></tr></table></figure>
+<p>在iOS中，程序结束会调用的协议方法是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (void)applicationWillTerminate:(UIApplication *)application;</div></pre></td></tr></table></figure>
+<p>如果对象管理着某些资源，那么在<code>dealloc</code>中也应该调用它们的清理方法，以减少意外情况。如果有意外情况发生，那么有一个好办法是，输出一句信息去指明程序发生了一个错误。这是一个编程错误，因为这个关闭方法需要在对象释放前调用；否则，这个方法就不会有效果了。输出信息会警告开发者改正这个问题。在<code>dealloc</code>中去关闭资源依然是一个避免内存泄漏的好习惯。下面有一个这样的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">- (void)close &#123;</div><div class="line">    </div><div class="line">    /* clean up resources */</div><div class="line">    _closed = YES;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)dealloc &#123;</div><div class="line">    </div><div class="line">    if (!_closed) &#123;</div><div class="line">       </div><div class="line">        NSLog(@&quot;ERROR: close was not called before dealloc!&quot;);</div><div class="line">        [self close];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果关闭方法没有调用，那么相比输出一个错误，你应该去抛出一个异常指出程序发生了一个严重的错误。另外就是要避免在<code>dealloc</code>方法中调用别的对象。在上面的例子中，在<code>dealloc</code>中调用了一个方法。但那是一个特殊情况：去查明程序错误。无论在这里调用什么方法都不太合适，因为这里的对象已经接近尾声了。如果别的方法还会异步执行任务或者调用它们自己的方法，等到对象执行完任务，对象早被释放了。这会导致很多问题并且可能导致程序崩溃，因为它们会回调告诉对象任务执行完了。如果对象早已被释放，那么就会发生错误。</p>
+<p>另外，调用释放方法的线程会进行最终释放，使所有对象的引用计数为0。有些方法需要运行在特定的线程，例如主线程。如果在<code>dealloc</code>中调用它们，无法保证它们运行在正确的线程。没有什么常规代码可以保证它们安全的运行在正确的线程，因为对象已经处于释放状态了，并且运行时已经对内部的数据结构进行释放标示了。</p>
+<p>也应该避免在<code>dealloc</code>中调用属性存取器，因为它们可以被覆盖并且去执行一些在释放期不安全的操作。比如，某个对象可能通过KVO监听属性，并且监听者想去做一些事情，例如试图保留对象，或使用这个将被回收的对象。这样做会导致在运行期出现一些莫名错误，并可能导致程序崩溃。</p>
+<h3 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h3><ul>
+<li><code>dealloc</code>方法里面只应该被用来释放对象以及取消注册，例如KVO或者NSNotificationCenter通知。</li>
+<li>如果一个对象持有系统资源，例如文件标示符，那么应该有一个方法去释放资源。当资源使用结束时，类的使用者应该调用关闭方法。</li>
+<li>避免在<code>dealloc</code>方法中调用执行异步操作的方法或者只能正常状态执行的方法。</li>
 </ul>
 ]]></content>
     
