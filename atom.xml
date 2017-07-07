@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-06T06:25:32.000Z</updated>
+  <updated>2017-07-07T03:13:32.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/07/01/Memory%20Management/"/>
     <id>http://yoursite.com/2017/07/01/Memory Management/</id>
     <published>2017-07-01T09:55:58.000Z</published>
-    <updated>2017-07-06T06:25:32.000Z</updated>
+    <updated>2017-07-07T03:13:32.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第五章：内存管理</p>
 <a id="more"></a>
@@ -166,7 +166,7 @@
 <p>如果关闭方法没有调用，那么相比输出一个错误，你应该去抛出一个异常指出程序发生了一个严重的错误。另外就是要避免在<code>dealloc</code>方法中调用别的对象。在上面的例子中，在<code>dealloc</code>中调用了一个方法。但那是一个特殊情况：去查明程序错误。无论在这里调用什么方法都不太合适，因为这里的对象已经接近尾声了。如果别的方法还会异步执行任务或者调用它们自己的方法，等到对象执行完任务，对象早被释放了。这会导致很多问题并且可能导致程序崩溃，因为它们会回调告诉对象任务执行完了。如果对象早已被释放，那么就会发生错误。</p>
 <p>另外，调用释放方法的线程会进行最终释放，使所有对象的引用计数为0。有些方法需要运行在特定的线程，例如主线程。如果在<code>dealloc</code>中调用它们，无法保证它们运行在正确的线程。没有什么常规代码可以保证它们安全的运行在正确的线程，因为对象已经处于释放状态了，并且运行时已经对内部的数据结构进行释放标示了。</p>
 <p>也应该避免在<code>dealloc</code>中调用属性存取器，因为它们可以被覆盖并且去执行一些在释放期不安全的操作。比如，某个对象可能通过KVO监听属性，并且监听者想去做一些事情，例如试图保留对象，或使用这个将被回收的对象。这样做会导致在运行期出现一些莫名错误，并可能导致程序崩溃。</p>
-<h3 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h3><ul>
+<h4 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h4><ul>
 <li><code>dealloc</code>方法里面只应该被用来释放对象以及取消注册，例如KVO或者NSNotificationCenter通知。</li>
 <li>如果一个对象持有系统资源，例如文件标示符，那么应该有一个方法去释放资源。当资源使用结束时，类的使用者应该调用关闭方法。</li>
 <li>避免在<code>dealloc</code>方法中调用执行异步操作的方法或者只能正常状态执行的方法。</li>
