@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-07T10:21:45.000Z</updated>
+  <updated>2017-07-07T16:13:21.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/07/01/Memory%20Management/"/>
     <id>http://yoursite.com/2017/07/01/Memory Management/</id>
     <published>2017-07-01T09:55:58.000Z</published>
-    <updated>2017-07-07T10:21:45.000Z</updated>
+    <updated>2017-07-07T16:13:21.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第五章：内存管理</p>
 <a id="more"></a>
@@ -188,6 +188,30 @@
 <h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><ul>
 <li>如果捕捉了异常，一定要将在<code>@try</code>块中的代码处理干净。</li>
 <li>默认情况下，在异常发生时ARC并不会处理干净代码。你可以通过一个编译器标示符开启它，但这会使得代码包变大和运行时花费变大。</li>
+</ul>
+<h3 id="使用弱引用避免循环引用"><a href="#使用弱引用避免循环引用" class="headerlink" title="使用弱引用避免循环引用"></a>使用弱引用避免循环引用</h3><p>在对象表中会有一种典型的情况，那就是每个对象都持有对方的引用。当它发生在引用计数模型下时，例如<code>Objective-C</code>的内存管理模型，那么某个地方肯定会发生内存泄露，因为最后没有对象持有循环的对象的引用。因此，没有对象可以访问循环引用，循环引用中的对象也不会被释放，因为它们相互持有保证对方的存活。</p>
+<p>在最简单的循环引用中，两个对象互相持有。图5.4展示了一个例子。</p>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%205.4.png" alt=""><br><strong>Figure 5.4</strong> 两个互相持有强引用的对象构成了循环引用。</p>
+<p>循环引用是非常容易理解的并且也可以通过看代码找到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@class EOCClassA;</div><div class="line">@class EOCClassB;</div><div class="line"></div><div class="line">@interface EOCClassA : NSObject</div><div class="line">@property (nonatomic, strong) EOCClassB *other;</div><div class="line">@end</div><div class="line"></div><div class="line">@interface EOCClassB : NSObject</div><div class="line">@property (nonatomic, strong) EOCClassA *other;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>从代码可以轻易的看出来这个潜在的循环引用；如果将<code>EOCClassA</code>中属性设置为<code>EOCClassB</code>的实例变量，将<code>EOCClassB</code>的属性设置为<code>EOCClassA</code>的实例变量，那么就会发生像图5.4那样的循环引用。</p>
+<p>循环引用的结果肯定是内存泄露。当对循环引用中对象的最后一个引用移除时，就会发生内存泄露。这意味着没有对象可以访问它们。在图5.5当<code>ObjectB</code>对象的最后一个引用被移除时，一个涉及四个对象的复杂循环引用就产生了。</p>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%205.5.png" alt=""><br><strong>Figure 5.5</strong> 当对象表中的循环引用的对象的最后引用被移除，循环引用就会发生内存泄露</p>
+<p>在MAC OS X上有个选项可以使用垃圾回收机制，垃圾回收机制会找到循环引用的地方并且清理掉没有任何引用的循环引用。但是垃圾回收机制在MAC OS X 10.8被废弃了，在iOS上更是没存在过。因此，在写代码时，需要注意这个循环引用问题并确保它不会发生。</p>
+<p>最好的避免循环引用的办法是使用弱引用。这样引用的一方总是非持有关系。通过<code>unsafe_unretained</code>特质也能达到这个效果。下面的例子中使用了这个特质：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">#import &lt;Foundation/Foundation.h&gt;</div><div class="line"></div><div class="line">@class EOCClassA;</div><div class="line">@class EOCClassB;</div><div class="line"></div><div class="line">@interface EOCClassA : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, strong) EOCClassB *other;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@interface EOCClassB : NSObject</div><div class="line"></div><div class="line">@property (nonatomic, unsafe_unretained) EOCClassA *other;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在这里，<code>EOCClassB</code>的<code>other</code>属性不会持有<code>EOCClassA</code>实例变量。这个叫做<code>unsafe_unretained</code>的特质指明属性是不安全的并且不会保留对象。如果设置的对象已经被释放了，那么调用它会导致程序崩溃。因为该属性不会保留对象，所以对象有可能被释放。</p>
+<p><code>unsafe_unretained</code>特质与<code>assign</code>特质语义相同。但是，<code>assign</code>通常用在基础类型(int, float, structs, etc.)，<code>unsafe_unretained</code>用于对象类型。这个特质本身就表明对象可能无法安全使用。</p>
+<p>不过ARC给<code>Objective-C</code>打来了一项功能那就是可以使用安全的弱引用：一个叫做<code>weak</code>的属性特质，它的作用跟<code>unsafe_unretained</code>相同。但是当对象释放时，它会自动将属性设置为nil。在上面的例子中，可以这样修改<code>EOCClassB</code>的属性：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property (nonatomic, weak) EOCClassA *other;</div></pre></td></tr></table></figure>
+<p>图5.6展示了<code>unsafe_unretained</code>和<code>weak</code>的不同之处。</p>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%205.6.png" alt=""><br><strong>Figure 5.6</strong> 当属性指向的对象释放时，<code>unsafe_unretained</code>和<code>weak</code>的不同之处</p>
+<p>当使用<code>unsafe_unretained</code>时，<code>EOCClassB</code>的<code>other</code>属性仍然指向一个已经释放的对象；当使用<code>weak</code>时，<code>EOCClassB</code>的<code>other</code>属性将会指向nil。</p>
+<p>但是，使用<code>weak</code>特质不应成为你偷懒的借口。在上面的例子中，当<code>EOCClassA</code>的对象释放后，如果<code>EOCClassB</code>属性仍然指向它，那是一个编程错误。如果发生了这种事情，那就是一个bug。你应该确保这种情况不会发生。但是使用<code>weak</code>特质比使用<code>unsafe_unretained</code>特质安全是肯定的。相对比应用崩溃，应用可能更能接受展示错误的数据。这么做无疑对终端用户更好。但是，在所指对象销毁后，仍使用弱引用，那仍是一个bug。例如有一个用户界面，它有一个属性持有数据源对象，用户界面需要展示数据。假如这样一个属性是弱引用。如果数据源在元素展示之前被释放，那么弱引用意味着虽然不会崩溃但用户界面不会显示任何数据。</p>
+<p>通常的规则是如果你不持有一个对象，那么就不要保留它。但是有个例外，那就是集合，集合类虽然不直接持有内容，但它要它所属的对象来保留这些元素。有一个例子，对象的引用会指向自己并不拥有的对象，比如委托模式。</p>
+<h4 id="小结-4"><a href="#小结-4" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>可以通过使用<code>weak</code>避免循环引用。</li>
+<li>弱引用可能会也可能不会自动清空。自动清空是由ARC带来的一个在运行期实现的新功能。自动清空的弱引用是安全的，它永远不会引用一个已经释放的对象。</li>
 </ul>
 ]]></content>
     
