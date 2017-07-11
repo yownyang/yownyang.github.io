@@ -93,7 +93,7 @@
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="这是翻译《Effective Objective-C 2.0》的第六章：Block和GCD">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%206.1.png">
-<meta property="og:updated_time" content="2017-07-11T08:34:07.000Z">
+<meta property="og:updated_time" content="2017-07-11T09:04:50.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第六章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第六章：Block和GCD">
@@ -408,7 +408,7 @@
 <p><code>descriptor</code>变量是每一个block都会有的结构体的指针，声明了block对象的大小，函数指针的拷贝和释放方法。当block的拷贝和释放呗调用时就会运行这些方法，例如，将捕获的对象保留或者释放。</p>
 <p>最后，block包含它所捕获的变量的拷贝。这些拷贝存储在<code>descriptor</code>变量后面，捕获多少变量就占用多少空间。请注意，拷贝的并不是这些对象本身，而是指向这些对象的指针变量。当block运行时，被捕捉的变量从内存中被读取，这就是为什么block需要通过参数传递进<code>invoke</code>函数。</p>
 <h4 id="全局block、堆block、栈block"><a href="#全局block、堆block、栈block" class="headerlink" title="全局block、堆block、栈block"></a>全局block、堆block、栈block</h4><hr>
-<p>PS : 经我本人验证，下面的block并不会像书中一样，出了if或者else的区域就被释放。所以各位看书的时候，请自行实验。但是除了例子举的有问题外，别的并无问题。个人看法，欢迎讨论。</p>
+<p>PS : 经我本人验证，下面的block并不会像书中一样，出了if或者else的区域就被释放，ARC/MRC我都试过。所以各位看书的时候，请自行实验。但是除了例子举的有问题外，别的并无问题。个人看法，欢迎讨论。</p>
 <hr>
 <p>当定义block时，它初始化的内存地址是在栈上。这意味着该block仅在它定义的范围内有效。例如，下面的代码是有风险的：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">void (^block)();</div><div class="line">if ( /* some condition */ ) &#123;</div><div class="line">    block = ^&#123;</div><div class="line">        NSLog(@&quot;Block A&quot;);</div><div class="line">    &#125;;</div><div class="line">&#125; else &#123;</div><div class="line">    block = ^&#123;</div><div class="line">        NSLog(@&quot;Block B&quot;);</div><div class="line">    &#125;;</div><div class="line">&#125;</div><div class="line">block();</div></pre></td></tr></table></figure>
