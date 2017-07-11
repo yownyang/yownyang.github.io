@@ -93,7 +93,7 @@
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="这是翻译《Effective Objective-C 2.0》的第六章：Block和GCD">
 <meta property="og:image" content="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%206.1.png">
-<meta property="og:updated_time" content="2017-07-11T09:04:50.000Z">
+<meta property="og:updated_time" content="2017-07-11T11:13:43.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="译《Effective Objective-C 2.0》第六章">
 <meta name="twitter:description" content="这是翻译《Effective Objective-C 2.0》的第六章：Block和GCD">
@@ -425,6 +425,36 @@
 <li>block参数和返回值都是可选的。</li>
 <li>block可以在栈上、堆上、全局初始化。一个栈block可以拷贝到堆上面，这样它就会像其余的<code>Objective-C</code>对象一样，拥有自己的引用计数。</li>
 </ul>
+<h3 id="使用typedefs创建通用block"><a href="#使用typedefs创建通用block" class="headerlink" title="使用typedefs创建通用block"></a>使用typedefs创建通用block</h3><p>block具有固有类型；因而，可将其赋给适当的类型变量。block的类型由参数和返回值组成。例如，下面的block：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">^(BOOL flag, int value)&#123;</div><div class="line">    if (flag) &#123;</div><div class="line">        return value * 5;</div><div class="line">    &#125; else &#123;</div><div class="line">        return value * 10;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个block有两个参数，分别是<code>Bool</code>型和<code>int</code>型，以及一个<code>int</code>型的返回值。如果要将其赋给一个变量，这个block需要适当的类型。赋值变量的类型是像这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">int (^variableName)(BOOL flag, int value) = ^(BOOL flag, int value) &#123;</div><div class="line">    // Implementation</div><div class="line">    return someInt;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个看起来跟正常类型由很大差别，但如果你使用函数指针，你会感觉到熟悉。这个类型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return_type (^block_name)(parameters)</div></pre></td></tr></table></figure>
+<p>block变量的定义与普通类型是不同的，它的变量名在中间而不是在右边。这造成它的语法难以记忆和阅读。因此，有一个好办法是为通用block定义类型，特别是你给别人提供API时。你可以起个好读的名字表示block的用途并将它的类型隐藏在后面。</p>
+<p>为了隐藏block的复杂类型，你可以使用C语言的一个功能去定义类型。这个功能的关键字是<code>typedef</code>，使用它可以定义一个易于阅读的名字，使它成为类型别名。例如，使用类型定义给一个block定义新的类型，这个block接受一个<code>int</code>参数和一个<code>Bool</code>参数并返回一个<code>int</code>值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">typedef int(^EOCSomeBlock)(BOOL flag, int value);</div></pre></td></tr></table></figure>
+<p>就像之前block变量的命名一样名字在<code>^</code>符号右边，新的类型名字也是这样。这条语句向系统增加了一个叫做<code>EOCSomeBlock</code>的类型。所以当你再次创建同类型变量时，你可以使用这个新类型：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">EOCSomeBlock block = ^(BOOL flag, int value)&#123;</div><div class="line">    // Implementation</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>现在这代码就易于阅读了，它就像你平时使用的变量一样定义，类型在左，变量名在右。</p>
+<p>使用这个功能可以把API中的block做的更为易用。类里面有些方法可能需要使用一个block参数，例如，一个异步任务完成时的回调，使用这个功能可以使得代码易于阅读。考虑一个情况，一个类有一个叫做<code>start</code>的方法，它有一个在任务结束时调用的block参数。如果没有使用类型定义，这个方法可能是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (void)startWithCompletionHandler:(void(^)(NSData *data, NSError *error))completion;</div></pre></td></tr></table></figure>
+<p>注意，在方法中的block参数和block变量的语法是不同的。如果方法中block参数可以是一个单词，那么就易读多了。所以你可以定义一个类型信息并且代替它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">typedef void(^EOCCompletionHandler)(NSData *data, NSError *error);</div><div class="line">- (void)startWithCompletionHandler:(EOCCompletionHandler)completion;</div></pre></td></tr></table></figure>
+<p>这样的参数是容易阅读和理解的。更好的是，现在的IDE都是自动支持这种类型定义的，这使得它更易于使用。</p>
+<p>如果你想重新构建block的函数时，使用类型定义也是非常有用的。例如，如果你现在想给block添加一个参数，你只需要简单修改类型定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">typedef void(^EOCCompletionHandler)(NSData *data, NSTimeInterval duration, NSError *error);</div></pre></td></tr></table></figure>
+<p>任何使用了这个类型定义的地方，例如方法签名，都会编译失败，然后你可以逐个修复。如果没有类型定义，你需要逐个找到你需要修改的代码。这很容易遗忘一两处，导致难以排查的bug。</p>
+<p>通常在使用block类型定义的类中定义它们。也会给类型block添加类名作为前缀。这使得block的用途非常清楚。还可以使用<code>typedef</code>定义更多的别名。这是多多益善的。</p>
+<p>在Mac OS X和iOS中的Account框架是有这种例子的。在框架中可以找到下面两个类型定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">typedef void(^ACAccountStoreSaveCompletionHandler) (BOOL success, NSError *error);</div><div class="line">typedef void(^ACAccountStoreRequestAccessCompletionHandler) (BOOL granted, NSError *error);</div></pre></td></tr></table></figure>
+<p>这两个block都相同的签名，但使用在不同的场景。签名中的类型名字和参数名字可以让开发者很容易理解这个block怎么使用。也可以将这两个block定义为一个单一类型定义，可能统称<code>ACAccountStoreBooleanCompletionHandler</code>，在两个地方都适用它。但是，这样做会使得block的用途不是那么清楚了。</p>
+<p>相似的，如果你有几个类都执行相似但不同的异步任务，并且无法放在一个继承中，那么每个类都应该有它自己的block类型定义。可能每一个block的签名都是相同的，但那也好过让每个类都适用同一个block。另一方面，如果这些类可以从一个基类继承，你可以将block类型定义放在基类中，然后让每个子类使用它。</p>
+<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>使用类型定义可以使得block变量更易于使用。</li>
+<li>定义block名字时务必遵守当前规则，使其不与其他类型冲突。</li>
+<li>给同一个block定义多个别名。当你想重构的代码使用了其中某个别名，只需修改相应<code>typedef</code>中的签名，无须改动其他别名。</li>
+</ul>
 
       
     </div>
@@ -612,7 +642,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解Block"><span class="nav-number">2.</span> <span class="nav-text">理解Block</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#block的基础"><span class="nav-number">2.1.</span> <span class="nav-text">block的基础</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block的内部结构"><span class="nav-number">2.2.</span> <span class="nav-text">block的内部结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#全局block、堆block、栈block"><span class="nav-number">2.3.</span> <span class="nav-text">全局block、堆block、栈block</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.4.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解Block"><span class="nav-number">2.</span> <span class="nav-text">理解Block</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#block的基础"><span class="nav-number">2.1.</span> <span class="nav-text">block的基础</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#block的内部结构"><span class="nav-number">2.2.</span> <span class="nav-text">block的内部结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#全局block、堆block、栈block"><span class="nav-number">2.3.</span> <span class="nav-text">全局block、堆block、栈block</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用typedefs创建通用block"><span class="nav-number">3.</span> <span class="nav-text">使用typedefs创建通用block</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">3.1.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
             
 
           </div>
