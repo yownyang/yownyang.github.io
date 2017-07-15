@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-13T08:38:55.000Z</updated>
+  <updated>2017-07-15T10:47:42.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/07/08/Blocks%20and%20Grand%20Central%20Dispatch/"/>
     <id>http://yoursite.com/2017/07/08/Blocks and Grand Central Dispatch/</id>
     <published>2017-07-08T07:50:24.000Z</published>
-    <updated>2017-07-13T08:38:55.000Z</updated>
+    <updated>2017-07-15T10:47:42.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第六章：Block和GCD</p>
 <a id="more"></a>
@@ -167,6 +167,104 @@
 <h4 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h4><ul>
 <li>当block捕捉的对象也捕捉了block时，小心循环引用这种问题。</li>
 <li>考虑一个打破循环引用的合适时机，但不要依赖API的使用者自己去打破。</li>
+</ul>
+<h3 id="多用Dispatch-Queue少用同步锁"><a href="#多用Dispatch-Queue少用同步锁" class="headerlink" title="多用Dispatch Queue少用同步锁"></a>多用Dispatch Queue少用同步锁</h3><p>在<code>Objective-C</code>中，如果你多个线程执行同一份代码可能会遇到一些问题。通常使用锁来解决这个问题。在GCD之前，有两个办法可以解决这个问题，第一个就是构建一个同步block:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">- (void)synchronizedMethod &#123;</div><div class="line">    @synchronized(self) &#123;</div><div class="line">        // Safe</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个结构会自动创建一个基于给定对象的锁，并且直到block里面的代码执行完毕才会解锁。在block代码的最后，锁会自动解除。在这个例子中，同步行为的对象是self。这通常是一个好的选择，因为它能确保对象的每个实例可以同步的运行其同步方法。但是<code>@synchronized(self)</code>的过度使用会带来性能问题，使用相同同步锁的block会按顺序执行。如果你对self进行了大量的同步锁，你不得不等待一些无关紧要的代码的结束。</p>
+<p>另一种做法是直接使用<code>NSLock</code>对象：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_lock = [[NSLock alloc] init];</div><div class="line">- (void)synchronizedMethod &#123;</div><div class="line">    [_lock lock];</div><div class="line">    // Safe</div><div class="line">    [_lock unlock];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>也可以使用<code>NSRecursiveLock</code>这种递归锁，它允许线程多次持有它，并且不会导致死锁。</p>
+<p>这两种方法都是好的，但也有它们的缺点。例如，同步block会在极端情况下会导致死锁并且会影响性能。当发生死锁时，直接使用锁会非常麻烦。</p>
+<p>对它们可以使用GCD进行替代，它可以提供一套高效和易于管理的锁。属性由于其特性经常会被开发者做成同步的，这时会将其特质设为<code>atomic</code>。使用<code>atomic</code>属性特质可以达到这个效果。或者，如果是手动书写，下面的代码是常用的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- (NSString*)someString &#123;</div><div class="line">    @synchronized(self) &#123;</div><div class="line">        return _someString;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">- (void)setSomeString:(NSString*)someString &#123;</div><div class="line">    @synchronized(self) &#123;</div><div class="line">        _someString = someString;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>重申如果滥用<code>@synchronized(self)</code>是危险的，因为所有这样的block都会抢夺同一个锁。如果多个属性都这样做，每个block都要等它之前的运行完，这肯定不是你想要的。我们只是想令每个属性独立的同步。</p>
+<p>顺便说下，你应该知道这只是在某种程度上确保了线程安全，它不能确保绝对安全。当然，访问的属性肯定是原子性的。当你使用属性时，你想确保得到有效的结果，但是当你多次从同一个线程获取值时，可能每次获取的结果不一样。另外的线程可能在访问时对属性进行了修改。</p>
+<p>一个简单高效的替代同步block或者锁对象的方法是使用一个连续的同步队列。不论是读还是写都在同一个同步队列中。这样做大概是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">_syncQueue = dispatch_queue_create(&quot;com.effectiveobjectivec.syncQueue&quot;, NULL);</div><div class="line"></div><div class="line">- (NSString*)someString &#123;</div><div class="line">    </div><div class="line">    __block NSString *localSomeString;</div><div class="line"></div><div class="line">    dispatch_sync(_syncQueue, ^&#123;</div><div class="line">    </div><div class="line">        localSomeString = _someString;</div><div class="line">    &#125;);</div><div class="line">    </div><div class="line">    return localSomeString;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)setSomeString:(NSString*)someString &#123;</div><div class="line">    </div><div class="line">    dispatch_sync(_syncQueue, ^&#123;</div><div class="line">    </div><div class="line">        _someString = someString;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个模式的思路是所有访问属性的操作都是同步的，因为GCD队列可以确保<code>setter</code>和<code>getter</code>方法运行在一个连续队列上。<code>getter</code>中的<code>__block</code>语法部分，是用于允许block可以设置本地变量，这种方法是更整洁的。所有的加锁都是在GCD中处理的，GCD是一个是现在非常底层的功能，所以它有很多优化。因此，你不需要担心别的事情，只需要聚焦在你的访问器代码上即可。</p>
+<p>但是，我们还可以尽一步优化。<code>setter</code>方法不一定需要是同步的。设置实例变量的block不需要返回任何内容。这个意思是你可以这样修改<code>setter</code>方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">- (void)setSomeString:(NSString*)someString &#123;</div><div class="line">    dispatch_async(_syncQueue, ^&#123;</div><div class="line">        _someString = someString;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个简单的变化是从同步派发变为异步派发，从调用者的角度看，它可以使得<code>setter</code>方法执行的更快，而读和写操作仍然会按序执行。如果你测试了性能，你可能发现它是更慢的；因为异步派发需要拷贝block。如果拷贝block的时间大于执行block的时间，那么它是慢的。所以在我们简单的例子中，它是变慢了的。但是这种方法仍是一个好的候选方法，如果block中执行的是非常重的任务。</p>
+<p>利用<code>getter</code>方法可以同时发生，<code>getter</code>跟<code>setter</code>需要顺序执行这一点可以进行优化。此时正体现出GCD方法的好处。使用同步block或者锁是没办法轻易做到这个的。不使用连续队列，考虑当使用并发队列时会发生什么：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">_syncQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);</div><div class="line"></div><div class="line">- (NSString*)someString &#123;</div><div class="line">    __block NSString *localSomeString;</div><div class="line">    dispatch_sync(_syncQueue, ^&#123;</div><div class="line">        localSomeString = _someString;</div><div class="line">    &#125;);</div><div class="line">    return localSomeString;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)setSomeString:(NSString*)someString &#123;</div><div class="line">    dispatch_async(_syncQueue, ^&#123;</div><div class="line">        _someString = someString;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>按照目前的情况来看，上述代码不是同步执行的。所有的读和写操作执行在同一条队列上，但是队列是并发的，读和写可以在同时发生。我们恰恰想阻止这一点。但是，GCD有一个简单的叫做栅栏的功能，是适用于这种情况的。这个功能是一个队列栅栏：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">void dispatch_barrier_async(dispatch_queue_t queue, dispatch_block_t block);</div><div class="line">void dispatch_barrier_sync(dispatch_queue_t queue, dispatch_block_t block);</div></pre></td></tr></table></figure>
+<p>栅栏必须单独执行不能跟其他队列并行。它是只作用于并发队列的，因为所有的串行队列都是按顺序执行的。当一个队列发现下一个执行的是栅栏block，队列会等所有的当前block执行完毕再去执行栅栏block。当栅栏block执行完毕，队列再向下正常执行。</p>
+<p>栅栏可以用在例子中的<code>setter</code>方法内。如果<code>setter</code>方法使用了栅栏，属性读取将同时发生，但是写只能单独执行。图6.3展示了许多读和单一写的队列。</p>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Figure%206.3.png" alt=""><br><strong>Figure 6.3</strong> 并发队列中正常block的读和栅栏block的写。读并发执行；写单一执行，如同栅栏。</p>
+<p>实现代码很简单：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">_syncQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);</div><div class="line"></div><div class="line">- (NSString*)someString &#123;</div><div class="line">    </div><div class="line">    __block NSString *localSomeString;</div><div class="line">    dispatch_sync(_syncQueue, ^&#123;</div><div class="line">        localSomeString = _someString;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    return localSomeString;</div><div class="line">&#125;</div><div class="line">- (void)setSomeString:(NSString*)someString &#123;</div><div class="line">    </div><div class="line">    dispatch_barrier_async(_syncQueue, ^&#123;</div><div class="line">        _someString = someString;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你进行性能测试，你肯定会发现它是比使用串行队列快的。你可以在<code>setter</code>中使用同步栅栏，它可能会更高效，原因如之前所说的一样。每一种性能优化的方法和选择都要基于你的使用场景。</p>
+<h4 id="小结-4"><a href="#小结-4" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>派发队列可以用来提供同步场景，可以用来替代<code>@synchronized</code>block和<code>NSLock</code>对象。</li>
+<li>将同步与异步派发结合起来一样可以提供同步行为，并且也不会造成线程阻塞。</li>
+<li>并发队列和栅栏block使用同步行为更高效。</li>
+</ul>
+<h3 id="多使用GCD，少使用performSelector及其相关方法"><a href="#多使用GCD，少使用performSelector及其相关方法" class="headerlink" title="多使用GCD，少使用performSelector及其相关方法"></a>多使用GCD，少使用performSelector及其相关方法</h3><p>由于<code>Objective-C</code>的动态派发，<code>NSObject</code>中有几个定义的方法，允许你调用任何方法。它们允许延迟执行方法或者指定在某个线程执行。它们是非常有用的功能；但是现在，GCD和block的出现使得它们的重要性大大减少。尽管你经常看到使用它们的代码，但我建议你清理掉它们。</p>
+<p>这一系列方法中最基础的那个是<code>performSelector:</code>。它只有单一一个参数，那就是需要执行的选择器，下面是方法签名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- (id)performSelector:(SEL)selector</div></pre></td></tr></table></figure>
+<p>它等价于直接调用这个方法。所以下面两行代码等价：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[object performSelector:@selector(selectorName)];[object selectorName];</div></pre></td></tr></table></figure>
+<p>它看起来好像是多余的。如果它只能这样用那当然是。但是它真是的强大是可以在运行时决定运行哪个选择器。这样的动态绑定机制意味着你可以这样做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">SEL selector;</div><div class="line"></div><div class="line">if ( /* some condition */ ) &#123;</div><div class="line">    </div><div class="line">    selector = @selector(foo);</div><div class="line">&#125; else if ( /* some other condition */ ) &#123;</div><div class="line">    </div><div class="line">    selector = @selector(bar);</div><div class="line">&#125; else &#123;</div><div class="line">    selector = @selector(baz);</div><div class="line">&#125;</div><div class="line">[object performSelector:selector];</div></pre></td></tr></table></figure>
+<p>这种代码非常灵活并且可以简化复杂的代码。另外也可以存储一个选择器，在之后的某个时候执行它。在这种情况下，不到运行时编译器无法知道它要执行哪个选择器。但是使用它的代价是，如果你在ARC环境下，编译器将会发出警告：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">warning: performSelector may cause a leak because its selector</div><div class="line">is unknown [-Warc-performSelector-leaks]</div></pre></td></tr></table></figure>
+<p>你可能没料到这点！如果你知道，你可能会理解为什么使用这些方法要小心了。这个警告信息看起来非常奇怪，为什么会担心可能发生内存泄露。最重要的是，你只不过简单的尝试去调用一个方法。这个原因是编译器不知道什么选择器会被调用，因此无法知道方法签名，返回类型甚至会不会有返回值。由于编译器无法知道方法名因此无法通过ARC的内存规则去确定返回值是否该释放。因此，ARC出于谨慎的做法就不会给他添加释放。但是，如果返回的值是一个已经被保留，这样的结果可能会导致内存泄露，。</p>
+<p>考虑下面的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">SEL selector;</div><div class="line">if ( /* some condition */ ) &#123;</div><div class="line">    selector = @selector(newObject);</div><div class="line">&#125; else if ( /* some other condition */ ) &#123;</div><div class="line">    selector = @selector(copy);</div><div class="line">&#125; else &#123;</div><div class="line">    selector = @selector(someProperty);</div><div class="line">&#125;</div><div class="line">id ret = [object performSelector:selector];</div></pre></td></tr></table></figure>
+<p>在上面的例子中有轻微的差别用于展示这个问题。在前两个选择器重，<code>ret</code>对象需要通过代码释放；第三个选择器则不需要。不仅在ARC下应该这样做，在MRC也应该这样做，这样才严格遵守了方法命名规范。不使用ARC(因此没有编译警告)，如果第一个或第二个条件为真，<code>ret</code>对象需要被释放，其余不需要。这是很容易被忽略的，就算使用静态分析器也很难找到内存泄露的地方。这就是为什么要弃用<code>performSelector</code>相关方法的原因。</p>
+<p>另一个原因是，这些方法只能返回对象或者void。尽管执行的选择器可能返回类型是void，但是<code>performSelector</code>方法返回的类型是id。如果想要返回整数或者浮点数，那么就需要复杂的类型转化，这是不安全的。由于id类型代表的是任意<code>Objective-C</code>对象，从技术上讲，只要返回值大小和指针大小相同即可，在32位架构下，任何类型都是32位，在64位架构下，任何类型读时64位的。如果返回值是一个C的结构体，<code>performSelector</code>方法就不能使用了。</p>
+<p><code>performSelector</code>还有不同的变体，可以在发送消息时传递参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- (id)performSelector:(SEL)selector withObject:(id)object</div><div class="line">- (id)performSelector:(SEL)selector withObject:(id)objectA withObject:(id)objectB</div></pre></td></tr></table></figure>
+<p>例如，这个变体可以设置对象中名为value的属性值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">id object = /* an object with a property called &apos;value&apos; */;</div><div class="line">id newValue = /* new value for the property */;</div><div class="line">[object performSelector:@selector(setValue:) withObject:newValue];</div></pre></td></tr></table></figure>
+<p>这个方法看起来是有用的，但它也有一个严重的限制。由于参数是id，所以传递的参数必须是一个对象。如果是整形或者浮点型，这些方法就不能用了。另外，使用这个方法的某个变体最多可以传递两个参数，即<code>performSelector:withObject:withObject:</code>。它没有办法执行参数多于两个的选择器。</p>
+<p><code>performSelector</code>的系统方法中另外一些方法还可以延时执行或者在另一个线程执行。这些方法中比较通用的如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">- (void)performSelector:(SEL)selector</div><div class="line">             withObject:(id)argument</div><div class="line">             afterDelay:(NSTimeInterval)delay</div><div class="line"></div><div class="line">- (void)performSelector:(SEL)selector</div><div class="line">               onThread:(NSThread*)thread</div><div class="line">             withObject:(id)argument</div><div class="line">          waitUntilDone:(BOOL)wait</div><div class="line"></div><div class="line">- (void)performSelectorOnMainThread:(SEL)selector</div><div class="line">                         withObject:(id)argument</div><div class="line">                      waitUntilDone:(BOOL)wait</div></pre></td></tr></table></figure>
+<p>但是，这些方法有更多的限制。例如，延后执行的方法不可以执行带有两个参数的选择器。在指定线程执行的方法也出于同样的理由限制很大。如果想使用这些方法就需要将这些参数打包在一个字典中然后再方法中将其一个一个取出来，这会增加消耗并可能带来潜在的bug。</p>
+<p>所有的这些限制都可以通过使用其他方法解决。主要就是使用block(看第37节)。而且，<code>performSelector</code>系列方法带来的效果都可以使用GCD达到。延后执行可以使用<code>dispatch_after</code>，在另一个线程执行可以使用<code>dispatch_sync</code>和<code>dispatch_async</code>。</p>
+<p>例如，去延后执行一个任务，你应该使用后面的格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">// Using performSelector:withObject:afterDelay:</div><div class="line">[self performSelector:@selector(doSomething) withObject:nil afterDelay:5.0];</div><div class="line"></div><div class="line">// Using dispatch_after</div><div class="line">dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC));</div><div class="line">dispatch_after(time, dispatch_get_main_queue(), ^(void)&#123;</div><div class="line"></div><div class="line">    [self doSomething];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>在主线程执行任务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// Using performSelectorOnMainThread:withObject:waitUntilDone:</div><div class="line">[self performSelectorOnMainThread:@selector(doSomething) withObject:nil waitUntilDone:NO];</div><div class="line"></div><div class="line">// Using dispatch_async</div><div class="line">// (or if waitUntilDone is YES, then dispatch_sync)</div><div class="line">dispatch_async(dispatch_get_main_queue(), ^&#123;</div><div class="line">    [self doSomething];</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="小结-5"><a href="#小结-5" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>使用<code>performSelector</code>系列方法有潜在的内存管理问题。如果没办法确定要执行哪个选择器，ARC编译器无法插入恰当的内存管理代码。</li>
+<li>使用<code>performSelector</code>系列方法限制非常大，例如返回类型和数字参数都无法使用。</li>
+<li>想让方法在某个线程上执行，最好使用GCD来实现。</li>
+</ul>
+<h3 id="掌握GCD和操作对象的使用时机"><a href="#掌握GCD和操作对象的使用时机" class="headerlink" title="掌握GCD和操作对象的使用时机"></a>掌握GCD和操作对象的使用时机</h3><p>GCD是一种非常棒的技术，不过有时使用系统标准库会有更好的效果。要知道所使用的每个库的使用时机，如果使用了不合适的库，会使代码难以管理。</p>
+<p>能与GCD的功能机制相媲美的很少。对于那种只执行一次的代码，使用<code>dispatch_once</code>(看第45节)是最好的选择。但是，对于在后台执行任务，使用GCD并不是最好的选择。一种与GCD不同但有关系的技术，叫做<code>NSOperationQueue</code>，允许你去将操作以<code>NSOperation</code>的子类的形式放入队列中，它也可以进行并发操作。它与GCD的相似不是一个巧合。操作队列出现在GCD之前，GCD是基于某些操作队列流行的理念设计的。实际上，从iOS 4和Mac OS X 10.6之后，操作队列的底层都是使用GCD实现的。</p>
+<p>两者的第一个不同点是GCD是一个纯C的API，操作队列是一个<code>Objective-C</code>对象。在GCD中任务用block表示，block是一个轻量级的数据结构。另一方面，操作对象是一个<code>Objective-C</code>对象，因此它是更重的。这也就是说，GCD并不总是最好的选择。有时，使用对象带来的好处是远远大于它的消耗的。</p>
+<p>使用<code>NSBlockOperation</code>和<code>NSOperationQueue</code>的<code>addOperationWithBlock:</code>方法，操作队列的语法和GCD非常相似。这里列举了一些使用<code>NSOperation</code>和<code>NSOperationQueue</code>的优点：</p>
+<blockquote>
+<p><strong>取消操作队列</strong></p>
+</blockquote>
+<p>使用操作队列是非常简单的。在运行任务之前，可以在<code>NSOperation</code>上调用<code>cancel</code>方法，该方法会设置一个内部标示符去告诉队列这个任务不需要运行了，但是它不能取消已经开始的操作队列了。另一方面，GCD没有办法取消未开始的操作队列。GCD那套架构是加入队列之后就不管了。你也可以在应用层实现取消功能，但那需要大量的代码，而操作队列已经实现了这个功能。</p>
+<blockquote>
+<p><strong>操作队列依赖</strong></p>
+</blockquote>
+<p>一个操作队列可以依赖其他多个操作队列。这样可以创建一个操作队列继承机制，即某个确定的操作队列可以在别的操作队列完成之后再执行。例如，你想从服务器下载一个文件，但是首先需要先下载一个清单文件。依赖可以让其余的下载操作队列在下载完清单文件之后再进行。如果操作队列被设置为并发执行，后续的下载可以同时执行，但是需要清单文件下载完毕。</p>
+<blockquote>
+<p><strong>操作队列属性的KVO</strong> </p>
+</blockquote>
+<p>操作队列会有许多可以使用KVO观测的值，例如<code>isCancelled</code>去确定是否取消操作队列，<code>isFinished</code>去确定操作队列是否完成。如果像知道一个任务的状态或者比GCD更详细的观测，使用KVO是非常有用的。</p>
+<blockquote>
+<p><strong>操作队列的优先级</strong> </p>
+</blockquote>
+<p>在一条队列中，每个操作队列都有它自己的优先级。高优先级的操作队列是要早于低优先级的。这个操作队列算法虽然是不透明的，但肯定经过认真思考。GCD没有办法直接做到类似事情。它没有任务优先级，但它可以给整条队列队列设置优先级而不是单个block。而令你自己在GCD上写调度算法，又是你所不愿意的。因此，操作队列提供的优先级设置功能是比GCD更适合的。</p>
+<p><code>NSOperations</code>也有自己的线程优先级，它决定了操作队列运行在哪条线程上。你在GCD上也可以做，但操作队列使用属性去控制是更简单的。</p>
+<blockquote>
+<p><strong>操作队列的重用</strong> </p>
+</blockquote>
+<p>除非你使用系统构建的<code>NSOperation</code>的子类，例如<code>NSBlockOperation</code>，否则你必须自己创建子类。这个类可以生成正常的<code>Objective-C</code>对象，也可以存储你想存储的信息。对象在运行时可以使用存储的信息，也可以调用类中任意的方法。这使得它比派发队列中单一的block更强大。这些<code>NSOperation</code>类可以重复使用，它遵循软件开发中的不重复原则。</p>
+<p>如你所见，有许多原因去使用操作队列而不是派发队列。操作队列提供了大多数你在开发时会用到的功能。不需要你自己去实现复杂功能，例如取消队列和队列优先级，这些操作队列都已经处理好了。</p>
+<p>另一个API使用了操作队列而不是派发队列的是<code>NSNotificationCenter</code>，它有一个方法可以让注册者通过一个block而不是选择器去监听通知。这个方法原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">- (id)addObserverForName:(NSString*)name</div><div class="line">                  object:(id)object</div><div class="line">                   queue:(NSOperationQueue*)queue</div><div class="line">              usingBlock:(void(^)(NSNotification*))block</div></pre></td></tr></table></figure>
+<p>相比于操作队列，这个方法也能通过派发队列去实现。但它并没有这样做，这个设计者只使用了高层的<code>Objective-C</code>API。在这个情况下，两者并无性能的差别。设计者可能不想使用派发队列，因为那需要使用GCD；注意block不是GCD，block并不需要依赖GCD。也可能是设计者只想保持所用的都是<code>Objective-C</code>功能。</p>
+<p>你可能经常听到你应该使用高层API，仅在需要时使用底层API这种说法。我认为它说的没问题，但我并不盲从。某些功能确实高层的<code>Objective-C</code>API可以实现，但底层并不一定比他差。最好的办法还是由性能来决定。</p>
+<h4 id="小结-6"><a href="#小结-6" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>在解决多线程和任务管理时，GCD并不是唯一选择。</li>
+<li><code>Objective-C</code>提供了一种高层次的API，它叫做操作队列，它可以实现大多数GCD能做到的事情。操作队列还做了一些复杂的操作，GCD也可以做到这些复杂操作，但是需要额外的代码。</li>
 </ul>
 ]]></content>
     
