@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-16T09:57:18.000Z</updated>
+  <updated>2017-07-16T10:01:52.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -14,6 +14,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>译《Effective Objective-C 2.0》第七章</title>
+    <link href="http://yoursite.com/2017/07/16/The%20System%20Frameworks/"/>
+    <id>http://yoursite.com/2017/07/16/The System Frameworks/</id>
+    <published>2017-07-16T09:59:09.000Z</published>
+    <updated>2017-07-16T10:01:52.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第七章：系统框架。</p>
+<p>这是这本书的最后一节了，翻译的有问题的地方看得人还请多多谅解。翻译完这本书就准备闭关，好好沉淀知识了。学习使我开心。</p>
+<a id="more"></a>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是翻译《Effective Objective-C 2.0》的第七章：系统框架。&lt;/p&gt;
+&lt;p&gt;这是这本书的最后一节了，翻译的有问题的地方看得人还请多多谅解。翻译完这本书就准备闭关，好好沉淀知识了。学习使我开心。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Objective-C" scheme="http://yoursite.com/categories/Objective-C/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>译《Effective Objective-C 2.0》第六章</title>
