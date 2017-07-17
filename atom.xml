@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-16T10:01:52.000Z</updated>
+  <updated>2017-07-17T06:04:49.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,11 +20,50 @@
     <link href="http://yoursite.com/2017/07/16/The%20System%20Frameworks/"/>
     <id>http://yoursite.com/2017/07/16/The System Frameworks/</id>
     <published>2017-07-16T09:59:09.000Z</published>
-    <updated>2017-07-16T10:01:52.000Z</updated>
+    <updated>2017-07-17T06:04:49.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是翻译《Effective Objective-C 2.0》的第七章：系统框架。</p>
 <p>这是这本书的最后一节了，翻译的有问题的地方看得人还请多多谅解。翻译完这本书就准备闭关，好好沉淀知识了。学习使我开心。</p>
 <a id="more"></a>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>你在使用<code>Objective-C</code>进行开发时，不使用框架是不可能的。即使是你使用的根类<code>NSObject</code>，它也是<code>Foundation</code>框架的一部分而不是语言本身的。如果你不想使用<code>Foundation</code>框架，你需要去写自己的根类，自己的集合类，自己的事件循环，和其他有用的类。而且，你也不能使用<code>Objective-C</code>为Mac OS X和iOS开发的其余框架。它们都是强大的，是开发者以年为单位进行优化的。因此，你可能会看到某些部分有感觉古老和笨拙的代码，但也会有意想不到的好东西在里面。</p>
+<h3 id="熟悉你使用的系统框架"><a href="#熟悉你使用的系统框架" class="headerlink" title="熟悉你使用的系统框架"></a>熟悉你使用的系统框架</h3><p>当你使用<code>Objective-C</code>编写程序时，你肯定会用到系统框架，它们会提供许多常用类，例如集合，你只需要编写应用就可以了。如果你不知道这些系统框架提供的功能，你很可能会写一些已经实现的功能。当操作系统更新时，应用的使用者会获取最新的系统框架代码。所以如果你使用了这些框架，你能从中获得性能提高的收益，并且不需要更新你的应用程序。</p>
+<p>一个框架其实是由代码集合打包成的动态库，并且将头文件作为接口。有时，第三方库的框架是一个静态库，因为iOS应用程序不允许使用动态库(PS:但是现在的第三方库还是有动态框架的，例如QQ登录)。它们不是真正的框架但是经常这样叫它们。但是，所有的iOS的系统框架都是使用的动态库。</p>
+<p>如果你为Mac OS X或者iOS开发图形应用程序，你肯定会用到一个叫做<code>Cocoa</code>的层，它在iOS上被称为<code>Cocoa Touch</code>。<code>Cocoa</code>不是一个框架，它是那些在创建应用时常用框架的集合。</p>
+<p>你主要会使用的框架叫做<code>Foundation</code>，它有<code>NSObject</code>、<code>NSArray</code>、 <code>NSDictionary</code>等类。这些类的前缀使用框架的<code>NS</code>前缀，因为它是在<code>NeXTSTEP</code>系统上使用<code>Objective-C</code>语言时确定的。<code>Foundation</code>框架是所有<code>Objective-C</code>应用程序的核心，如果没有它，本书讲的很多东西就是在瞎扯了。</p>
+<p><code>Foundation</code>提供的功能不止集合这些，它也提供了例如字符串处理这种复杂功能。例如，<code>NSLinguisticTagger</code>提供了解析一个字符串并找到其中名词、动词、代词等的功能。简言之，<code>Foundation</code>提供的功能不只是基础。</p>
+<p><code>Foundation</code>有一个叫做<code>CoreFoundation</code>的伴生类。尽管它不是一个<code>Objective-C</code>类，但它仍是一个重要框架，在你编写<code>Objective-C</code>程序时，它可以提供很多与<code>Foundation</code>框架等同功能的函数。<code>Foundation</code>和<code>CoreFoundation</code>不止名字相似，它们也有很多关联。一个众所周知的功能就是通过免费桥可以将一个<code>CoreFoundation</code>的<code>C</code>结构体转化为<code>Foundation</code>的<code>Objective-C</code>对象，反之亦然。例如，使用<code>Foundation</code>框架创建一个<code>NSString</code>类型的字符串，它等价于<code>CoreFoundation</code>的<code>CFString</code>。免费转换桥使运行时认为<code>CoreFoundation</code>对象是<code>Objective-C</code>对象。不幸的是，免费转换桥是非常复杂的，所以你自己不太可能手工实现它。这个功能开发时使用还是挺不错的，但是手动实现它，就需要考虑考虑了。</p>
+<p>除了<code>Foundation</code>和<code>CoreFoundation</code>之外还有很多系统框架。包括但不限于下列框架：</p>
+<blockquote>
+<p>CFNetwork</p>
+</blockquote>
+<p>此框架基于BSD套接字进行封装，提供了C级别的易用的网络基础。<code>Foundation</code>将其包装为<code>Objective-C</code>接口，例如<code>NSURLConnection</code>从一个URL下载数据。 </p>
+<blockquote>
+<p>CoreAudio</p>
+</blockquote>
+<p>它提供了一个基于设备硬件的C级别的音频接口。这套框架很难使用，因为音频本身就很复杂。幸运的是，<code>Objective-C</code>抽象了一套更简单易用的API。</p>
+<blockquote>
+<p>AVFoundation</p>
+</blockquote>
+<p>它提供了<code>Objective-C</code>对象可以用来进行音视频的录制和播放功能，例如使用<code>UIView</code>视图去展示一个视频。</p>
+<blockquote>
+<p>CoreData</p>
+</blockquote>
+<p>它提供了<code>Objective-C</code>接口用于将对象存储在数据库中。它可以在Mac OS X 和 iOS上处理数据库数据获取和存储。</p>
+<blockquote>
+<p>CoreText</p>
+</blockquote>
+<p>它提供的C语言接口可以高效的进行文字排版和渲染。</p>
+<p>当然还有别的框架，但是从列表就可以看出来，开发应用时，通常需要使用C级别的API。C级别的API绕过<code>Objective-C</code>的运行时可以带来速度的提升。当然，使用C级别的API更要小心内存管理问题，因为ARC仅适用于<code>Objective-C</code>对象。如果你使用这些框架，对它们进行了解是很重要的。</p>
+<p>你可能还会编写使用UI框架的Mac OS X 和 iOS应用。它们的核心UI框架，分别被成为AppKit和UIKit，它们都提供了基于<code>Foundation</code>和<code>CoreFoundation</code>构建的<code>Objective-C</code>类。它们提供了UI元素，可以将多个UI元素粘合在一起构成应用程序。在这些主要的UI框架之下是<code>CoreAnimation</code>和<code>CoreGraphics</code>框架。</p>
+<p><code>CoreAnimation</code>是用<code>Objective-C</code>写的，它提供了一些工具用于渲染图形和执行动画。你可能不需要使用这个级别的API，但知道它是很好的。<code>CoreAnimation</code>不是一个框架，但它是<code>QuartzCore</code>框架的一部分。但是在框架中，它仍算是一等公民。</p>
+<p><code>CoreGraphics</code>是用C写的，它提供了数据结构和函数去进行2D渲染。例如，定义<code>CGPoint</code>、<code>CGSize</code>、<code>CGRect</code>的数据结构，而<code>UIKit</code>中的<code>UIView</code>类在定位位置时，这些结构都需要使用。</p>
+<p>多数框架是基于UI框架搭建的，例如<code>MapKit</code>，它给iOS提供地图功能。比如<code>Social</code>框架，它给Mac OS X和iOS提供社交网络功能。开发者通常会将这些框架与核心框架结合使用。</p>
+<p>总体来讲，许多框架都是直接存在于Mac OS X和iOS。所以，如果你需要写一个辅助类，首先搜索下有没有相应的系统框架吧。通常，它都是已经实现了的。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>对开发者而言，许多系统框架都是可以直接用的。最重要的是<code>Foundation</code>和<code>CoreFoundation</code>，它们提供了整个应用程序的许多核心函数。</li>
+<li>许多任务都可以使用已有的系统框架，例如音频、视频、网络通信、数据管理。</li>
+<li>请记住纯粹用C代码写成的框架是一样重要的，如果你想成为一个好的<code>Objective-C</code>开发者，你应该理解C的核心概念。</li>
+</ul>
 ]]></content>
     
     <summary type="html">
