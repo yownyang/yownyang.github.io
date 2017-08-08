@@ -54,7 +54,7 @@
     <entry>
       <title><![CDATA[基本内容图解]]></title>
       <url>%2F2017%2F04%2F17%2FBasePrinciple_Img%2F</url>
-      <content type="text"><![CDATA[Some principle！！！ 最近抽空总结了一些基础东西，偷得浮生半日闲啊。首先是编译型语言和解释型语言的区别，图解: 就是整理了上面的东西之后，发现需要整理下app的运行时内存的情况，然后… 突然又发现里面的寄存器不是很明白，又去大致看了下计算机的硬件组成，摊手。谁让这东西早还给老师了，又整理如下 对于计算机硬件这块，没有深入了解，只是大致理了了流程。目前图解整理就这么多啦……]]></content>
+      <content type="text"><![CDATA[Some principle！！！ 编译型语言和解释型语言的区别 APP运行时的内存分布 计算机硬件构成 UIView的实现构成]]></content>
     </entry>
 
     
