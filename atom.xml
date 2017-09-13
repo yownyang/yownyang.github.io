@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-23T09:09:34.000Z</updated>
+  <updated>2017-09-13T10:03:11.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -14,6 +14,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Other-Book</title>
+    <link href="http://yoursite.com/2017/09/13/ReadBook_Other/"/>
+    <id>http://yoursite.com/2017/09/13/ReadBook_Other/</id>
+    <published>2017-09-13T10:03:04.000Z</published>
+    <updated>2017-09-13T10:03:11.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>程序员相关书籍，不要只做一个iOS码农，要成为一个真正的程序员。</p>
+<a id="more"></a>
+<ol>
+<li><strong>《代码整洁之道》</strong> 这本书其实应该叫“通往专业程序员的道路”，本书讲述了作者很多的亲身经历，以及很多概念，例如流态、TDD、卡塔等。写的相当全面，写出了如何做一个专业的程序员，而不是混日子的码农，强烈推荐看这本思想层面的书。遗忘历史者，必重蹈覆辙。</li>
+<li><strong>《重构》</strong> 这是一本非常经典的书，程序员必读。本书以示例的方式讲述了重构的尽可能多的情况，脱离了很多书的那种空洞感。不过这种偏思维的知识，跟设计模式一样，是需要在项目中切实使用，切身体会才能完全掌握的。在我看来，工程师只用做两件事，添加新功能和重构。</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;程序员相关书籍，不要只做一个iOS码农，要成为一个真正的程序员。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="ReadBook" scheme="http://yoursite.com/categories/ReadBook/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>译《Effective Objective-C 2.0》第七章</title>
@@ -2147,32 +2173,6 @@ objc_AssociationPolicy policy)</code></p>
     </summary>
     
       <category term="Weex" scheme="http://yoursite.com/categories/Weex/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Other-Book</title>
-    <link href="http://yoursite.com/2017/02/26/ReadBook_Other/"/>
-    <id>http://yoursite.com/2017/02/26/ReadBook_Other/</id>
-    <published>2017-02-26T11:03:08.000Z</published>
-    <updated>2017-09-13T10:01:27.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>程序员相关书籍，不要只做一个iOS码农，要成为一个真正的程序员。</p>
-<a id="more"></a>
-<ol>
-<li><strong>《代码整洁之道》</strong> 这本书其实应该叫“通往专业程序员的道路”，本书讲述了作者很多的亲身经历，以及很多概念，例如流态、TDD、卡塔等。写的相当全面，写出了如何做一个专业的程序员，而不是混日子的码农，强烈推荐看这本思想层面的书。遗忘历史者，必重蹈覆辙。</li>
-<li><strong>《重构》</strong> 这是一本非常经典的书，程序员必读。本书以示例的方式讲述了重构的尽可能多的情况，脱离了很多书的那种空洞感。不过这种偏思维的知识，跟设计模式一样，是需要在项目中切实使用，切身体会才能完全掌握的。在我看来，工程师只用做两件事，添加新功能和重构。</li>
-</ol>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;程序员相关书籍，不要只做一个iOS码农，要成为一个真正的程序员。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="ReadBook" scheme="http://yoursite.com/categories/ReadBook/"/>
     
     
   </entry>
