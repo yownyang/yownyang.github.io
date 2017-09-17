@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-09-17T04:21:05.000Z</updated>
+  <updated>2017-09-17T04:54:27.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/09/17/AdaptationiPhoneX/"/>
     <id>http://yoursite.com/2017/09/17/AdaptationiPhoneX/</id>
     <published>2017-09-17T02:01:42.000Z</published>
-    <updated>2017-09-17T04:21:05.000Z</updated>
+    <updated>2017-09-17T04:54:27.000Z</updated>
     
     <content type="html"><![CDATA[<p>如何适配iPhone X</p>
 <a id="more"></a>
@@ -46,7 +46,12 @@
 <h4 id="屏幕的差异化"><a href="#屏幕的差异化" class="headerlink" title="屏幕的差异化"></a>屏幕的差异化</h4><p>明确了解两种iPhone屏幕的不同是适配的前提，如下图:<br><img src="https://github.com/yownyang/Resource/raw/master/Image/OC/Diff%20iPhone.png" alt=""></p>
 <p>这是我在Xcode 9Beta版分别跑的iPhone 8和iPhone X的模拟器，大家可以很清楚的看到二者的区别。首先，这个项目只是加了一个自定义的白色的view，背景色是橘黄色。其次，是在storyBoard中使用AutoLayout进行布局，白色view的约束是上下左右都是0。</p>
 <p>从图上也可以看出，safe area的区域所占据的屏幕边缘是正常的矩形，也就是说苹果已经把椭圆边角的区域处理掉了，这就大大降低了布局的难度。当然，如果状态栏也被隐藏就需要特殊的设计以及布局了，另外下面那个操作区是没办法隐藏的。当你只在安全区布局时，完全可以像以前一样，不需要考虑任何边角问题。</p>
-<h4 id="成果"><a href="#成果" class="headerlink" title="成果"></a>成果</h4><p><a href="https://github.com/yownyang/Resource/tree/master/Project/OC/AdaptationiPhonX" target="_blank" rel="external">项目地址</a></p>
+<h4 id="成果"><a href="#成果" class="headerlink" title="成果"></a>成果</h4><ul>
+<li>当我们选择storyboard和xib布局时，我们都是在safe area中布局的</li>
+<li>当我们选择代码布局时，我们不能使用self.view.frame了，它会包含圆角区域</li>
+<li>我们在viewDidAppear中获取self.view.safeAreaLayoutGuide.layoutFrame，这个时候可以得到准确的safe area的frame</li>
+</ul>
+<p><a href="https://github.com/yownyang/Resource/tree/master/Project/OC/AdaptationiPhonX" target="_blank" rel="external">项目地址</a></p>
 <h4 id="额外信息"><a href="#额外信息" class="headerlink" title="额外信息"></a>额外信息</h4><ul>
 <li>iOS 11带来了ARKit和Core ML这两大框架</li>
 <li>iPhone X指纹的移除</li>
