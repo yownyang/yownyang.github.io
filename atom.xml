@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-09-17T04:56:49.000Z</updated>
+  <updated>2018-04-27T08:12:08.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -14,6 +14,78 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于浮点型精度问题的一些理解</title>
+    <link href="http://yoursite.com/2018/04/27/About%20float-point%20precision/"/>
+    <id>http://yoursite.com/2018/04/27/About float-point precision/</id>
+    <published>2018-04-27T03:43:37.000Z</published>
+    <updated>2018-04-27T08:12:08.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是一篇关于浮点型精度的文章，大致会从三个大的问题入手，去解析精度问题。</p>
+<ol>
+<li>字符串转浮点型出现精度丢失</li>
+<li>浮点型和浮点型操作精度丢失</li>
+<li>NSDecimalNumber如何解决精度丢失</li>
+</ol>
+<a id="more"></a>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>4月21号终于完成了4月份的自考，也有些时间来研究一些东西，写写博客了，刚好群里边有人问关于浮点型精度的问题，我去研究了一些资料，问了一些前辈和同行，总结如下，结尾处会有我参考资料的链接。(以下内容均是基于32位系统进行描述的)</p>
+<h3 id="字符串的存储方式"><a href="#字符串的存储方式" class="headerlink" title="字符串的存储方式"></a>字符串的存储方式</h3><p>首先，我们了解一下字符串的存储方式，它是以ASCII码进行存储的，然后将对应的ASCII码转换成二进制存储在内存中。</p>
+<p>例如：a对应的ASCII码是97，97对应的七位二进制表示是1100001，八位是01100001，这两者区别可以忽略掉，八位二进制可表示的字符范围更宽泛而已。因为是一个字符所以只需要1个字节，也就是8位，也就是1组二进制。</p>
+<p>1.23作为一个字符串它由4个字符组成所以需要4个字节，也就是32位，需要4组二进制。它们分别对应的ASCII码是49、46、50、51，转换成二进制就分别是110001、101110、110010、110011。</p>
+<h3 id="浮点型的存储方式"><a href="#浮点型的存储方式" class="headerlink" title="浮点型的存储方式"></a>浮点型的存储方式</h3><p>浮点型作为一种与整型不同的存储方式，它是遵循IEEE754标准的。浮点型在内存中的存储分为了3个部分，分别是1个符号位s，8个指数E，23个有效数字M。任意一个二进制数V都可以写成<code>sM*2^E</code>，s就是正号和负号，M就是有效数字，E就是指数。这个公式的意思是将M的小数点向右移E位。下面是IEEE754的一些规定：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">1. 当s=0，V为正数；当s=1，V为负数。</div><div class="line">2. M表示有效数字，大于等于1，小于2。</div><div class="line">3. 2^E表示指数位。</div><div class="line">4. E的真实值必须再减去一个中间数，对于8位的E，这个中间数是127。</div><div class="line">5. 在计算机内部保存M时，默认这个数的第一位总是1，因此可以被舍去，只保存后面的xxxxxx部分。</div></pre></td></tr></table></figure>
+<p>例如浮点数10.0，转换成二进制是1010，在32位系统下你还要在前面补上28个0，这个二进制并不是在内存中的存储样式。套用上面的公式你可以写成+1.010*2^3，其中s是0，那么也就是+，M就是1.01，E就是3。这只是公式，并不是在内存中的真正存储形式。接下来看下下面的图，图中的数值不用看，跟本文无关，主要是看组成的三部分。</p>
+<p><img src="https://github.com/yownyang/Resource/raw/master/Image/Principle/%E7%BC%96%E7%A0%81%E7%A9%BA%E9%97%B4.png" alt=""></p>
+<p>看过了上图，还是以+1.010*2^3为例，将其填入该32位的二进制中。</p>
+<ol>
+<li>首先是符号位S，也就是图中的sign，因为是正号，所以sign是0；</li>
+<li>E是3，按第4条规则，E的真实值需要E+127，也就是130，将其转成二进制存储，也就是10000010；</li>
+<li>M是1.010，按上述第5条规则，舍去1，也就是01000000000000000000000；</li>
+<li>所以合在一起，浮点数10.0在内存中的表示就是01000001001000000000000000000000。</li>
+</ol>
+<h3 id="整型在内存中的存储方式"><a href="#整型在内存中的存储方式" class="headerlink" title="整型在内存中的存储方式"></a>整型在内存中的存储方式</h3><p>既然浮点型和字符串在内存中的存储方式都说了，顺道提下整型在内存中的存储方式。</p>
+<p>这个很简单，它只需要考虑一个问题，就是正数和负数，它由两部分构成，第一个还是符号位，表示正负，后面31位都是实际存储的数字，所以它支持存储的数字范围是-2^31~~~2^31-1。只需要直接将整数转换成二进制就可以了。</p>
+<p>比如100，在内存中的二进制表示就是00000000000000000000000001100100。</p>
+<h3 id="字符串转浮点型出现精度丢失"><a href="#字符串转浮点型出现精度丢失" class="headerlink" title="字符串转浮点型出现精度丢失"></a>字符串转浮点型出现精度丢失</h3><p>前面说了字符串的存储方式和浮点型的存储方式，现在这个问题其实挺好解决的了。对了，还要说的一点是，你用的什么方法进行强转的，对于NSString类型的转成float，一般使用的是floatValue方法，那么可以看下官方文档对这个方法的解读。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">The floating-point value of the string as a float.</div><div class="line">This property doesn’t include whitespace at the beginning of the string. This property is HUGE_VAL or –HUGE_VAL on overflow, 0.0 on underflow. This property is 0.0 if the string doesn’t begin with a valid text representation of a floating-point number.</div><div class="line">This method uses formatting information stored in the non-localized value; use an NSScanner object for localized scanning of numeric values from a string.</div></pre></td></tr></table></figure>
+<p>上文比较有用的信息就是这个方法是通过NSScanner对字符串进行逐个扫描，如果不是一个真正的浮点型，比如@”abv”这种，这个方法就是0.0；如果是@”1.23”这种，它就会转化成浮点型1.23。所以可以排除掉这个可能：浮点型和字符串在内存中的二进制表现形式不同而导致的。</p>
+<p>那么，问题就很清楚了，肯定是浮点型自身存储成2进制的时候发生了精度丢失。这次举两个例子对比下：</p>
+<ol>
+<li>浮点数10.0，它的有效数字M是1.010，忽略掉整数位1，实际存储的也就3位是010，在32位情况下，M最多可以存储23位有效数，所以它是无损的。</li>
+<li>浮点数1.2，它的有效数字是0011001100110011001100110011001100110011001100110011，这个长度大大超过了23位能存储的，所以它会被截取掉后面超出的部分，超出部分明显不全是0，所以会对它的精度造成损失。</li>
+<li>总结：精度损失不损失需要看十进制的数据能否精确的转换为二进制。</li>
+</ol>
+<h3 id="浮点型和浮点型操作精度丢失"><a href="#浮点型和浮点型操作精度丢失" class="headerlink" title="浮点型和浮点型操作精度丢失"></a>浮点型和浮点型操作精度丢失</h3><p>关于这个问题，其实看懂了上面的内容，就知道这个问题出在哪里了。比如a=b+c;首先浮点型b和c自身存储就已经损失精度了，其次得到的结果a如果也是一个不能精确转为二进制的浮点型，那么必然造成精度的2次缺失，会跟你想象中的结果差距更大。</p>
+<h3 id="NSDecimalNumber如何解决精度丢失"><a href="#NSDecimalNumber如何解决精度丢失" class="headerlink" title="NSDecimalNumber如何解决精度丢失"></a>NSDecimalNumber如何解决精度丢失</h3><p>找到了问题的产生原因，再来说说iOS提供的NSDecimalNumber这个类如何解决这个问题。我们先来看下系统文档：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NSDecimalNumber, an immutable subclass of NSNumber, provides an object-oriented wrapper for doing base-10 arithmetic. An instance can represent any number that can be expressed as mantissa x 10^exponent where mantissa is a decimal integer up to 38 digits long, and exponent is an integer from –128 through 127.</div></pre></td></tr></table></figure>
+<p>上述大概意思是NSDecimalNumber是NSNumber的一个子类，它提供了一个基于10进制面向对象的封装。它也有一个类似IEEE754的公式：<code>N*M*10^E</code></p>
+<p>例如浮点型1.23，套用上面公式就是<code>1*123*10^(-2)</code>。它会将这个浮点型包装成一个NSDecimalNumber对象，N代表是正数还是负数，在本例中是1，M代表将浮点型转化为整数后的数，在本例中是123，E代表指数，在本例中是-2。</p>
+<p>这样来看，系统的处理方式其实很明显了，这个类不存储浮点型，只存储整数，自然避免了IEEE754那种方式的精度损失，当然类在内存中肯定跟浮点型是不同的，但是M这个属性保存的是整数型，是同浮点型一样都是基础数据类型。</p>
+<h3 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h3><p>其实还有一个整型强转浮点型的问题，这个问题跟字符串转浮点型的情况还是不同的，这个是因为两者对二进制的转化方式不同。整型存储在内存中是直接转化成二进制的，浮点型虽然也是转成二进制存储，但它需要符合IEEE754标准，所以你直接把整型的二进制取出来当浮点型使用，肯定会出现对应的问题。</p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><ol>
+<li><a href="https://en.wikipedia.org/wiki/ASCII" target="_blank" rel="external">ASCII码</a></li>
+<li><a href="https://en.wikipedia.org/wiki/IEEE_754" target="_blank" rel="external">IEEE754</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2010/06/ieee_floating-point_representation.html?from=singlemessage&amp;isappinstalled=0" target="_blank" rel="external">阮一峰-浮点数二进制的表示</a></li>
+<li><a href="https://developer.apple.com/documentation/foundation/nsdecimalnumber?language=objc" target="_blank" rel="external">NSDecimalNumber文档</a></li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是一篇关于浮点型精度的文章，大致会从三个大的问题入手，去解析精度问题。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;字符串转浮点型出现精度丢失&lt;/li&gt;
+&lt;li&gt;浮点型和浮点型操作精度丢失&lt;/li&gt;
+&lt;li&gt;NSDecimalNumber如何解决精度丢失&lt;/li&gt;
+&lt;/ol&gt;
+    
+    </summary>
+    
+      <category term="Principle" scheme="http://yoursite.com/categories/Principle/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>如何适配iPhoneX</title>
