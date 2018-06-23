@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-06-23T07:04:29.000Z</updated>
+  <updated>2018-06-23T07:12:38.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,11 +16,11 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>关于浮点型精度问题的一些理解</title>
+    <title>知识点杂记</title>
     <link href="http://yoursite.com/2018/06/23/Knowledge%20notes/"/>
     <id>http://yoursite.com/2018/06/23/Knowledge notes/</id>
     <published>2018-06-23T07:04:29.000Z</published>
-    <updated>2018-06-23T07:04:29.000Z</updated>
+    <updated>2018-06-23T07:12:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o</p>
 <a id="more"></a>
