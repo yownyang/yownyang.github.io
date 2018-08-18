@@ -1,0 +1,892 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="YownYang, iOS, Weex, YownYang's blog, iPhoneX, Xcode9, iOS11" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="YownYang's blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇博客主要是介绍构建一个Mac项目，用来对项目中未使用(冗余)的代码文件进行查找和删除。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="查找删除iOS项目中未使用的代码文件">
+<meta property="og:url" content="http://yoursite.com/2018/08/18/Clean Project Tool/index.html">
+<meta property="og:site_name" content="YownYang's blog">
+<meta property="og:description" content="本篇博客主要是介绍构建一个Mac项目，用来对项目中未使用(冗余)的代码文件进行查找和删除。">
+<meta property="og:updated_time" content="2018-08-18T10:55:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="查找删除iOS项目中未使用的代码文件">
+<meta name="twitter:description" content="本篇博客主要是介绍构建一个Mac项目，用来对项目中未使用(冗余)的代码文件进行查找和删除。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/18/Clean Project Tool/"/>
+
+
+
+
+
+  <title> 查找删除iOS项目中未使用的代码文件 | YownYang's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1261580070&web_id=1261580070" language="JavaScript"></script>
+  </div>
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">YownYang's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/18/Clean Project Tool/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="YownYang">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/uploads/avatar.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="YownYang's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="YownYang's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                查找删除iOS项目中未使用的代码文件
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-18T15:31:02+08:00">
+                2018-08-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Xcode/" itemprop="url" rel="index">
+                    <span itemprop="name">Xcode</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇博客主要是介绍构建一个Mac项目，用来对项目中未使用(冗余)的代码文件进行查找和删除。</p>
+<a id="more"></a>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>5月份的时候入职了一家新公司，入职之后发现项目混乱，问题很多。开始的时候并未注意到项目中有很多随着版本迭代和设计者不合理设计遗留的文件，随着对项目逐渐深入发现项目中有很多冗余文件，决定写个工具进行查找删除。</p>
+<h3 id="项目的组成"><a href="#项目的组成" class="headerlink" title="项目的组成"></a>项目的组成</h3><p>首先，我们需要了解一个项目中各种东西的概念。</p>
+<h4 id="Xcode-project"><a href="#Xcode-project" class="headerlink" title="Xcode project"></a>Xcode project</h4><p>Xcode 中的project是指一个项目，它包含各种文件。它可以进行各种项目级别的配置，如debug和release，也可以配置多种target，项目本身是无法产生app或者mac应用的。</p>
+<pre><code>* .h/.m/.mm/.c等源代码文件
+* .a/framework等库文件
+* image/bundle/plist等资源文件
+* xib/storyboard等特殊资源文件
+</code></pre><h4 id="Xcode-target"><a href="#Xcode-target" class="headerlink" title="Xcode target"></a>Xcode target</h4><p>target定义了构建一个app所需的文件和配置。target之间可以互相依赖，当它们在同一个workspace中时，Xcode会发现它们的隐性依赖关系。你也可以对它们进行设置，使其显性依赖。</p>
+<h4 id="Xcode-workspace"><a href="#Xcode-workspace" class="headerlink" title="Xcode workspace"></a>Xcode workspace</h4><p><code>workspace</code>一般直译为工作空间，这个概念在苹果平台开发上面不是很明显，因为我们都是通过<code>xxx.xcodeproj</code>文件直接打开项目进行工作的(其实也是存在workspace的)，但如果你使用cocoapods进行第三方库的管理，你会发现你只有通过打开<code>xxx.xcworkspace</code>文件才能正常工作。</p>
+<p>这是因为cocoapods产生了一个project用来存放各种第三方库产生的target，又将主项目的project和自己产生的project放在同一个workspace下进行依赖。</p>
+<h4 id="Xcode-scheme"><a href="#Xcode-scheme" class="headerlink" title="Xcode scheme"></a>Xcode scheme</h4><p>既然说了这么多了，也不介意再提及下scheme这个东西。它可以包含多个target进行执行，但每次只能执行一个scheme。它可以存在project下，也可以存在workspace下。前者可以让包含了project的任意workspace使用，后者只能让那个workspace本身使用了。</p>
+<h4 id="项目组成的总结"><a href="#项目组成的总结" class="headerlink" title="项目组成的总结"></a>项目组成的总结</h4><p>它们的关系大概可以这样总结:</p>
+<pre><code>workspace &gt; project &gt; scheme &gt; target
+</code></pre><p>或者:</p>
+<pre><code>workspace &gt; scheme &gt; project &gt; target
+</code></pre><h4 id="正常工作项目的分析"><a href="#正常工作项目的分析" class="headerlink" title="正常工作项目的分析"></a>正常工作项目的分析</h4><p>通过上面的说明，其实可以知道了，我们如果要找出一个项目中文件的组织关系，应该去project里面找。对于只存在一个project的项目，应该去xxx.xcodeproj中查找关系。对于使用了cocoapods的，如果要查找cocoapods项目的文件关系，可以去pod.xcodeproj中查找。不过一般没有必要，因为里面存的都是库，并且数量不会很多，不使用的话一般是整个库的移除。</p>
+<h3 id="xxx-xcodeproj"><a href="#xxx-xcodeproj" class="headerlink" title="xxx.xcodeproj"></a>xxx.xcodeproj</h3><p>xxx.xcodeproj其实是一个文件夹，使用右键打开包内容，你会发现它包含了一个叫做<code>project.pbxproj</code>的文件，这个文件才是用来保存project中文件的组织关系的。</p>
+<h4 id="project-pbxproj"><a href="#project-pbxproj" class="headerlink" title="project.pbxproj"></a>project.pbxproj</h4><p>它其实是一个老式的plist文件，它里面的每一个元素都是一个24位长度的十六进制标识符。这标识符似乎基于日期，序列和预定义值生成，所以保证了它的唯一性。(PS: 在看这个文件的时候建议使用TextMate，将格式指定为Property List(Old-Style))。</p>
+<p>它最外层包含5个键值对，key分别是：<code>archiveVersion</code>、<code>classes</code>、<code>objectVersion</code>、<code>objects</code>、<code>rootObject</code>。我们只需要关心<code>objects</code>和<code>rootObject</code>就行了。</p>
+<h4 id="解析objects和rootObject-附代码"><a href="#解析objects和rootObject-附代码" class="headerlink" title="解析objects和rootObject(附代码)"></a>解析objects和rootObject(附代码)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div></pre></td><td class="code"><pre><div class="line">//    1. 获取objects字典，fullDictionary是整个project.pbxproj的内容</div><div class="line">NSDictionary *objectDictionary = fullDictionary[@&quot;objects&quot;];</div><div class="line">//    2. 获取project的key</div><div class="line">NSString *rootObjectKey = fullDictionary[@&quot;rootObject&quot;];</div><div class="line">//    3. 根据key从objects字典中获取project的字典</div><div class="line">NSDictionary *projectDictionary = objectDictionary[rootObjectKey];</div><div class="line">//    4. 获取mainGroup的key</div><div class="line">NSString *mainGroupKey = projectDictionary[@&quot;mainGroup&quot;];</div><div class="line">//    5. 根据key从objects字典中获取mainGroup的字典</div><div class="line">NSDictionary *mainGroupDictionary = objectDictionary[mainGroupKey];</div><div class="line">//    6. 获取children数组，实际就是主target最外层的所有文件夹和文件</div><div class="line">NSArray *floderArray = mainGroupDictionary[@&quot;children&quot;];</div><div class="line">//    7. 以递归的方式获取项目中所有的h/m/mm/xib文件，将它们存储在一个字典套字典中。内层字典是每个文件自身的唯一标识做key，它们自身的完整路径做value。外层字典以每个不带后缀的文件名做key，以内层字典为value。</div><div class="line">- (void)searchAllClassWithArray:(NSArray *)keyArray objectDictionary:(NSDictionary *)objectDictionary path:(NSString *)path &#123;</div><div class="line">    </div><div class="line">    [keyArray enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL * _Nonnull stop) &#123;</div><div class="line">        </div><div class="line">        @autoreleasepool &#123;</div><div class="line">            </div><div class="line">            NSDictionary *floderOrFileDictionary = objectDictionary[key];</div><div class="line">            NSString *type = floderOrFileDictionary[@&quot;isa&quot;];</div><div class="line">            NSString *onePath = floderOrFileDictionary[@&quot;path&quot;];</div><div class="line">            NSString *floderOrFilePath = [path stringByAppendingPathComponent:onePath];</div><div class="line">            if ([type isEqualToString:@&quot;PBXFileReference&quot;]) &#123;</div><div class="line">                </div><div class="line">                //                如果是非实体文件夹中的文件，会带有非实体文件夹的路径，所以要取最后一段</div><div class="line">                NSString *className = onePath.lastPathComponent;</div><div class="line">                NSString *classExtension = className.pathExtension;</div><div class="line">                if ([classExtension isEqualToString:@&quot;h&quot;] ||</div><div class="line">                    [classExtension isEqualToString:@&quot;m&quot;] ||</div><div class="line">                    [classExtension isEqualToString:@&quot;xib&quot;] ||</div><div class="line">                    [classExtension isEqualToString:@&quot;mm&quot;]) &#123;</div><div class="line">                    </div><div class="line">                    NSString *classNameWithoutExtension = className.stringByDeletingPathExtension;</div><div class="line">                    NSMutableDictionary *tempClassDictionary = [self.allClassDictionary objectForKey:classNameWithoutExtension];</div><div class="line">                    if (tempClassDictionary) &#123;</div><div class="line">                        </div><div class="line">                        [tempClassDictionary setObject:floderOrFilePath forKey:key];</div><div class="line">                    &#125; else &#123;</div><div class="line">                        </div><div class="line">                        tempClassDictionary = [NSMutableDictionary dictionary];</div><div class="line">                        [tempClassDictionary setObject:floderOrFilePath forKey:key];</div><div class="line">                        [self.allClassDictionary setObject:tempClassDictionary forKey:classNameWithoutExtension];</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125; else if ([type isEqualToString:@&quot;PBXGroup&quot;]) &#123;</div><div class="line">                </div><div class="line">                NSArray *floderArray = floderOrFileDictionary[@&quot;children&quot;];</div><div class="line">                [self searchAllClassWithArray:floderArray objectDictionary:objectDictionary path:floderOrFilePath];</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;];</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 8. 枚举所有的文件，从中匹配是否有导入其他的.h文件。如果有，则将那个文件簇标记为使用文件。</div><div class="line">- (void)searchUsedClass &#123;</div><div class="line">    </div><div class="line">    NSMutableDictionary *tempAllClassDictionary = [NSMutableDictionary dictionary];</div><div class="line">    [self.allClassDictionary.allValues enumerateObjectsUsingBlock:^(NSMutableDictionary *obj, NSUInteger idx, BOOL * _Nonnull stop) &#123;</div><div class="line">        </div><div class="line">        @autoreleasepool &#123;</div><div class="line"></div><div class="line">            [tempAllClassDictionary addEntriesFromDictionary:obj];</div><div class="line">        &#125;</div><div class="line">    &#125;];</div><div class="line">    </div><div class="line">    [tempAllClassDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *classUUID, NSString *classPath1, BOOL * _Nonnull stop) &#123;</div><div class="line">        </div><div class="line">        @autoreleasepool &#123;</div><div class="line">            </div><div class="line">            NSString *classExtension = classPath1.pathExtension;</div><div class="line">            if ([classExtension isEqualToString:@&quot;h&quot;]) &#123;</div><div class="line">                </div><div class="line">                NSString *className1 = classPath1.lastPathComponent;</div><div class="line">                NSString *classNameWithoutExtension1 = className1.stringByDeletingPathExtension;</div><div class="line">                [tempAllClassDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *classUUID, NSString *classPath2, BOOL * _Nonnull stop) &#123;</div><div class="line">                   </div><div class="line">                    @autoreleasepool &#123;</div><div class="line">                        </div><div class="line">                        //  不能从自己的类中匹配</div><div class="line">                        NSString *className2 = classPath2.lastPathComponent;</div><div class="line">                        NSString *classNameWithoutExtension2 = className2.stringByDeletingPathExtension;</div><div class="line">                        if (![classNameWithoutExtension1 isEqualToString:classNameWithoutExtension2]) &#123;</div><div class="line">                            </div><div class="line">                            NSString *searchTypeOne = [NSString stringWithFormat:@&quot;#import \&quot;%@\&quot;&quot;, className1];</div><div class="line">                            NSString *searchTypeTwo = [NSString stringWithFormat:@&quot;\&quot;%@\&quot;&quot;, classNameWithoutExtension1];</div><div class="line">                            NSString *contents = [NSString stringWithContentsOfFile:classPath2 encoding:NSUTF8StringEncoding error:nil];</div><div class="line">                            BOOL isContainTypeOne = [contents containsString:searchTypeOne];</div><div class="line">                            BOOL isContainTypeTwo = [contents containsString:searchTypeTwo];</div><div class="line">                            if (isContainTypeOne || isContainTypeTwo) &#123;</div><div class="line">                                </div><div class="line">                                [self.usedClassDictionary setObject:classPath1 forKey:classNameWithoutExtension1];</div><div class="line">                            &#125;</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;];</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;];</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 9. 使用所有文件的数组去除掉使用文件，剩下的就是未使用文件了。也可以在这里做一些忽略过滤，过滤掉不想删除的文件。如main.m。</div><div class="line">- (void)searchUnusedClass &#123;</div><div class="line">    </div><div class="line">    self.unusedClassDictionary = [NSMutableDictionary dictionaryWithDictionary:self.allClassDictionary];</div><div class="line">    [self.unusedClassDictionary removeObjectsForKeys:self.usedClassDictionary.allKeys];</div><div class="line">    [self.unusedClassDictionary removeObjectForKey:@&quot;main&quot;];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>拉了这么长的篇幅，写了这么多代码，还是不如完整项目来的好。<br><a href="https://github.com/yownyang/Resource/tree/master/Project/Xcode/HZRCleanProjectTool" target="_blank" rel="external">仓库地址</a>     </p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><ol>
+<li><a href="https://developer.apple.com/library/archive/featuredarticles/XcodeConcepts/Concept-Targets.html" target="_blank" rel="external">苹果官方文档</a></li>
+<li><a href="http://www.monobjc.net/xcode-project-file-format.html" target="_blank" rel="external">project.pbxproj</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/23/Knowledge notes/" rel="next" title="知识点杂记">
+                <i class="fa fa-chevron-left"></i> 知识点杂记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-58d6a53e969b167f" async = "async" ></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8yNzg5OC80NDc1"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="YownYang" />
+          <p class="site-author-name" itemprop="name">YownYang</p>
+          <p class="site-description motion-element" itemprop="description">匆匆那年 匆匆那天</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">17</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/yownyang" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://roxyhuang.github.io/" title="NeoHuang" target="_blank">NeoHuang</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#项目的组成"><span class="nav-number">2.</span> <span class="nav-text">项目的组成</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Xcode-project"><span class="nav-number">2.1.</span> <span class="nav-text">Xcode project</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Xcode-target"><span class="nav-number">2.2.</span> <span class="nav-text">Xcode target</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Xcode-workspace"><span class="nav-number">2.3.</span> <span class="nav-text">Xcode workspace</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Xcode-scheme"><span class="nav-number">2.4.</span> <span class="nav-text">Xcode scheme</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#项目组成的总结"><span class="nav-number">2.5.</span> <span class="nav-text">项目组成的总结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正常工作项目的分析"><span class="nav-number">2.6.</span> <span class="nav-text">正常工作项目的分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xxx-xcodeproj"><span class="nav-number">3.</span> <span class="nav-text">xxx.xcodeproj</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#project-pbxproj"><span class="nav-number">3.1.</span> <span class="nav-text">project.pbxproj</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解析objects和rootObject-附代码"><span class="nav-number">3.2.</span> <span class="nav-text">解析objects和rootObject(附代码)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文献"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">YownYang</span>
+</div>
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv"><i class="fa fa-user"></i><span class="busuanzi-value" id="busuanzi_value_site_uv"></span></span>
+  
+
+  
+    <span class="site-pv"><i class="fa fa-eye"></i><span class="busuanzi-value" id="busuanzi_value_site_pv"></span></span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+ 
+  <script type="text/javascript">
+   (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+   })(document, 'script');
+  </script>
+ 
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
