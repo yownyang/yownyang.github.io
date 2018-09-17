@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-08-18T10:55:33.000Z</updated>
+  <updated>2018-09-17T14:00:54.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -14,6 +14,60 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Property和KVO的爱恨纠葛</title>
+    <link href="http://yoursite.com/2018/09/17/Property%20And%20KVO/"/>
+    <id>http://yoursite.com/2018/09/17/Property And KVO/</id>
+    <published>2018-09-17T12:41:05.000Z</published>
+    <updated>2018-09-17T14:00:54.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是一篇Property和KVO爱恨纠葛的文章。</p>
+<a id="more"></a>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>由于系统KVO没有block回调，所以本人通过模拟系统常规KVO的实现方式去进行了block的添加，也就是常见的重写被监听对象的setter方法。正常情况下一切顺利，然而当自定义的KVO遇到readonly时，就发生了一些好玩的事情。</p>
+<h3 id="KVO"><a href="#KVO" class="headerlink" title="KVO"></a>KVO</h3><h4 id="KVO概述"><a href="#KVO概述" class="headerlink" title="KVO概述"></a>KVO概述</h4><p>KVO的全称是keyValueObserving，也就是观察者模式在iOS的实现之一。KVO的作用就是用来监听某个属性值的变化或者集合中元素的变化。</p>
+<h4 id="KVO被触发的原因"><a href="#KVO被触发的原因" class="headerlink" title="KVO被触发的原因"></a>KVO被触发的原因</h4><blockquote>
+<p>表面原因:</p>
+</blockquote>
+<ol>
+<li>对于普通属性变化，只需要通过属性的setter方法改变值就可以了;</li>
+<li>对于readonly属性变化，则有两种办法：一是调用<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>；二是使用KVC；</li>
+<li>对于数组元素的变化，需要在对元素增删替代时，使用<code>mutableArrayValueForKey</code>方法。<code>字典</code>和<code>集合</code>等都有其对应的方法。</li>
+</ol>
+<blockquote>
+<p>根本原因: </p>
+</blockquote>
+<p>通过不同的手段最终触发了<code>NSKeyValueNotifyObserver</code>函数。这个函数是个内部函数，但你可以在<code>observeValueForKeyPath:ofObject:change:context:</code>中打断点，然后再调用栈中看到它。</p>
+<h4 id="自定义KVO的实现原理"><a href="#自定义KVO的实现原理" class="headerlink" title="自定义KVO的实现原理"></a>自定义KVO的实现原理</h4><ol>
+<li>建立被观察对象所属类的子类；</li>
+<li>将被观察对象所属的实例的类指向创建的子类；</li>
+<li>重写被观察对象的setter方法，在其中触发你传进来的block；如果是系统的话，就是触发<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>。</li>
+</ol>
+<h3 id="监听readonly的特质的属性？"><a href="#监听readonly的特质的属性？" class="headerlink" title="监听readonly的特质的属性？"></a>监听readonly的特质的属性？</h3><p>众所周知，如果你监听的属性是只读的，那么KVO毫无作用，因为只读属性是不存在setter方法的。</p>
+<p>那么，不知道你有没有关注过<code>WKWebView</code>的<code>title</code>、<code>canGoBack</code>、<code>estimatedProgress</code>等属性呢？这些属性都是只读属性，但它们可以触发KVO。下面是<code>WKWebView</code>的<code>title</code>的官方文档：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">/*! @abstract The page title.</div><div class="line"> @discussion @link WKWebView @/link is key-value observing (KVO) compliant</div><div class="line"> for this property.</div><div class="line"> */</div><div class="line">@property (nullable, nonatomic, readonly, copy) NSString *title;</div></pre></td></tr></table></figure>
+<h3 id="自定义KVO的问题"><a href="#自定义KVO的问题" class="headerlink" title="自定义KVO的问题"></a>自定义KVO的问题</h3><h4 id="实现方式一：重写setter方法"><a href="#实现方式一：重写setter方法" class="headerlink" title="实现方式一：重写setter方法"></a>实现方式一：重写setter方法</h4><p>如果你仔细看了上面的文字，其实就大概可以猜到<code>WKWebView</code>的这些只读属性是如何触发KVO的了。</p>
+<p>这个时候问题就来了，当你使用自己定义的KVO时，你并不能获取到数据的更改了。因为你是基于setter方法的重写，而只读属性是绕过了setter方法，直接使用了上述针对readonly的两种办法。</p>
+<p>这个时候你基于你现有的自定义实现毫无办法去解决这个问题，那么就只能抛弃自定义实现喽。</p>
+<h4 id="实现方式二：重写observeValueForKeyPath-ofObject-change-context-方法"><a href="#实现方式二：重写observeValueForKeyPath-ofObject-change-context-方法" class="headerlink" title="实现方式二：重写observeValueForKeyPath:ofObject:change:context:方法"></a>实现方式二：重写observeValueForKeyPath:ofObject:change:context:方法</h4><p>基于这种实现方式的轮子，其实facebook已经实现了，那就是<code>KVOController</code>。有兴趣的话可以去github上看下，<a href="https://github.com/facebook/KVOController" target="_blank" rel="external">链接在此</a>。</p>
+<p>它的实现方式大致就是通过重写<code>observeValueForKeyPath:ofObject:change:context:</code>方法来进行监听分发。由于触发KVO的根本原因是触发了<code>NSKeyValueNotifyObserver</code>函数，这个函数会调用<code>observeValueForKeyPath:ofObject:change:context:</code>，所以基于这种实现的自定义KVO可以接收到任何的KVO触发。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>感觉这个知识点好短啊，总结就两句话。</p>
+<ol>
+<li>如果自定义KVO，就考虑使用Facebook那一套或者以<code>observeValueForKeyPath:ofObject:change:context:</code>方法为实现基础。</li>
+<li>老老实实使用系统提供的KVO。</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这是一篇Property和KVO爱恨纠葛的文章。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Principle" scheme="http://yoursite.com/categories/Principle/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>查找删除iOS项目中未使用的代码文件</title>
