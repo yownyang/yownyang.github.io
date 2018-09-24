@@ -92,7 +92,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/06/23/Knowledge notes/index.html">
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o">
-<meta property="og:updated_time" content="2018-06-23T07:12:38.000Z">
+<meta property="og:updated_time" content="2018-09-24T13:54:14.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="知识点杂记">
 <meta name="twitter:description" content="这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o">
@@ -377,6 +377,22 @@
       
         <p>这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o</p>
 <a id="more"></a>
+<h3 id="MVC、MVVM、MVP"><a href="#MVC、MVVM、MVP" class="headerlink" title="MVC、MVVM、MVP"></a>MVC、MVVM、MVP</h3><p>Q: MVC框架构成</p>
+<blockquote>
+<p>A: Model(数据)/View(视图)/C(控制器)。V和M可以直接通信，所以M中存在数据处理的逻辑，V中存在数据展示的逻辑，C用来接收事件，向M传送数据等其它逻辑。</p>
+</blockquote>
+<p>Q: MVP框架构成</p>
+<blockquote>
+<p>A: Model(数据)/View(视图)/P(展示器)。V和M不可以直接通信。M只具有简单的数据模型，V只具有简单的控件组成，它们没有逻辑在内。P则会把所有的逻辑在其内去处理，这是它和MVC的不同。</p>
+</blockquote>
+<p>Q: MVVM框架构成</p>
+<blockquote>
+<p>A: Model(数据)/View(视图)/VM(控制器)。V和M不可以直接通信。M只具有简单的数据模型，V只具有简单的控件组成，它们没有逻辑在内。VM会包含所有逻辑，但它的实现是进行data-binding来动态的修改数据，这是它与MVP的不同。</p>
+</blockquote>
+<p>Q: 三者的关系</p>
+<blockquote>
+<p>A: MVC衍生出MVP，MVP衍生出MVVM。三个框架没有高低之分，只有适合与不适合，毕竟它们三者都是为了解耦。是数据、界面、逻辑由谁来负责在发生变化。如果具体到iOS上面，由于官方的原因，C本身就是一个很重的东西，即使M和V会帮助C分担一部分的逻辑。所以在iOS上面，我认为也可以理解为通过不同的手段为C减负，保证代码组织的合理性。</p>
+</blockquote>
 <h3 id="编译原理相关"><a href="#编译原理相关" class="headerlink" title="编译原理相关"></a>编译原理相关</h3><p>Q: dSYM文件是什么，作用。</p>
 <blockquote>
 <p>A: 每次编译后都会产生的一个文件，本质是一个符号表，包含内存地址、函数名、文件名、行号。作用是可以查找到指定内存地址对应的函数位置。</p>
@@ -679,7 +695,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#编译原理相关"><span class="nav-number">1.</span> <span class="nav-text">编译原理相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#App相关"><span class="nav-number">2.</span> <span class="nav-text">App相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多线程相关"><span class="nav-number">3.</span> <span class="nav-text">多线程相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#版本控制"><span class="nav-number">4.</span> <span class="nav-text">版本控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件化"><span class="nav-number">5.</span> <span class="nav-text">组件化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runloop"><span class="nav-number">6.</span> <span class="nav-text">runloop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block"><span class="nav-number">7.</span> <span class="nav-text">block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#屏幕渲染"><span class="nav-number">8.</span> <span class="nav-text">屏幕渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runtime"><span class="nav-number">9.</span> <span class="nav-text">runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存管理"><span class="nav-number">10.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#冷门小知识"><span class="nav-number">11.</span> <span class="nav-text">冷门小知识</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#MVC、MVVM、MVP"><span class="nav-number">1.</span> <span class="nav-text">MVC、MVVM、MVP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编译原理相关"><span class="nav-number">2.</span> <span class="nav-text">编译原理相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#App相关"><span class="nav-number">3.</span> <span class="nav-text">App相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多线程相关"><span class="nav-number">4.</span> <span class="nav-text">多线程相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#版本控制"><span class="nav-number">5.</span> <span class="nav-text">版本控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件化"><span class="nav-number">6.</span> <span class="nav-text">组件化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runloop"><span class="nav-number">7.</span> <span class="nav-text">runloop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#block"><span class="nav-number">8.</span> <span class="nav-text">block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#屏幕渲染"><span class="nav-number">9.</span> <span class="nav-text">屏幕渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runtime"><span class="nav-number">10.</span> <span class="nav-text">runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存管理"><span class="nav-number">11.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#冷门小知识"><span class="nav-number">12.</span> <span class="nav-text">冷门小知识</span></a></li></ol></div>
             
 
           </div>
