@@ -121,7 +121,7 @@
     <link href="http://yoursite.com/2018/06/23/Knowledge%20notes/"/>
     <id>http://yoursite.com/2018/06/23/Knowledge notes/</id>
     <published>2018-06-23T07:04:29.000Z</published>
-    <updated>2018-09-26T14:46:06.000Z</updated>
+    <updated>2018-09-27T12:15:35.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o</p>
 <a id="more"></a>
@@ -178,7 +178,7 @@
 <p>Q: App性能优化</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">1. ARC管理内存</div><div class="line">2. 缓存机制</div><div class="line">3. 延迟加载</div><div class="line">4. 保证图片大小与容器大小相同</div><div class="line">5. 避免复杂的XIB</div><div class="line">6. 权衡渲染方法</div><div class="line">7. 重用</div><div class="line">8. AutoreleasePool</div><div class="line">9. 苹果的Profile工具检测，进一步优化具体代码</div></pre></td></tr></table></figure>
 <p>Q: tableView性能优化</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">1. 高度缓存</div><div class="line">2. cell复用</div><div class="line">3. 图片按需加载</div><div class="line">4. 大的数据在其他线程操作</div><div class="line">5. cell中不需要交互的控件可以使用绘制</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">1. 高度缓存</div><div class="line">2. cell复用</div><div class="line">3. 图片按需加载</div><div class="line">4. 大的数据在其他线程操作</div></pre></td></tr></table></figure>
 <h3 id="多线程相关"><a href="#多线程相关" class="headerlink" title="多线程相关"></a>多线程相关</h3><p>Q: 多线程是什么，作用，缺点</p>
 <blockquote>
 <p>A: 多线程是指多个线程并发执行的技术。作用是用来提升同一时间段内系统的处理效率，也就是作业量。缺点是消耗资源，容易造成数据竞争，死锁等问题。</p>
@@ -197,7 +197,7 @@
 </blockquote>
 <p>Q: 如何避免多线程的常见问题</p>
 <blockquote>
-<p>A: 选择合适的多线程技术；尽量简化线程之间的关系；尽量指定相同优先级；写操作栅栏+串行，读操作并行。</p>
+<p>A: 选择合适的多线程技术；尽量简化线程之间的关系；尽量指定相同优先级；队列中写操作栅栏，读操作并行。</p>
 </blockquote>
 <h3 id="版本控制"><a href="#版本控制" class="headerlink" title="版本控制"></a>版本控制</h3><p>Q: SVN，Git</p>
 <blockquote>
