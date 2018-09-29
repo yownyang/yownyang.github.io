@@ -121,7 +121,7 @@
     <link href="http://yoursite.com/2018/06/23/Knowledge%20notes/"/>
     <id>http://yoursite.com/2018/06/23/Knowledge notes/</id>
     <published>2018-06-23T07:04:29.000Z</published>
-    <updated>2018-09-27T12:15:35.000Z</updated>
+    <updated>2018-09-29T14:55:48.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o</p>
 <a id="more"></a>
@@ -181,7 +181,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">1. 高度缓存</div><div class="line">2. cell复用</div><div class="line">3. 图片按需加载</div><div class="line">4. 大的数据在其他线程操作</div></pre></td></tr></table></figure>
 <h3 id="多线程相关"><a href="#多线程相关" class="headerlink" title="多线程相关"></a>多线程相关</h3><p>Q: 多线程是什么，作用，缺点</p>
 <blockquote>
-<p>A: 多线程是指多个线程并发执行的技术。作用是用来提升同一时间段内系统的处理效率，也就是作业量。缺点是消耗资源，容易造成数据竞争，死锁等问题。</p>
+<p>A: 多线程是指多个线程并发执行的技术。作用是用来提升同一时间段内系统的处理效率，也就是作业量。缺点是消耗资源，使用不当容易造成数据竞争，死锁，优先级反转等问题。</p>
 </blockquote>
 <p>Q: 线程是什么，特点</p>
 <blockquote>
@@ -191,10 +191,27 @@
 <blockquote>
 <p>A: 一个CPU在一条线程上执行单一无分叉路径为单线程。一个CPU在多条线程切换执行称为并发，也叫伪.多线程。多个CPU同时执行多条线程称为并行，也叫真.多线程。</p>
 </blockquote>
+<p>Q: 数据竞争/死锁/优先级反转</p>
+<blockquote>
+<p>A: 数据竞争，即资源非互斥状态。如果一个属性被多个进程读没有问题，如果同时有进程写入，那么有些进程就会获得旧数据。因此可以通过加锁或者栅栏来解决。</p>
+<p>死锁需要四个条件：资源互斥、请求和保持、循环等待、不可剥夺。破坏任何一个就能解决死锁问题。A和B两个线程访问R1和R2资源，如果各持有一个的话，那么A会等B释放，B会等A释放，就形成了死锁。</p>
+<p>优先级反转：A,B,C三个线程，优先级A&gt;B&gt;C。C先运行占用资源R，A然后运行来使用资源R，但R已被使用，A只能等待，这时任务B来执行，由于优先级高于C，所以B先执行，然后C执行，最后才是A执行，这样就产生了优先级反转。解决办法是优先级天花板和优先级继承。优先级天花板是指，任意使用资源R的线程，它的优先级都会被提到这个资源的最高优先级。这样就不会出现优先级反转的问题了。优先级继承是指，当C在使用资源R时，A也要使用资源R，通过判断，如果C的优先级低于A，那么将C的优先级临时提升到A。</p>
+</blockquote>
 <p>Q: pthread、NSThread、NSOperation、GCD</p>
 <blockquote>
-<p>A: pthread和GCD都是一套C语言API，NSThread和NSOperation是一套OC语言的API。pthread和NSThread对线程直接操作，并且需要程序员去管理生命周期，很少使用。NSOperation和GCD不是直接面向线程操作，而是把要执行的方法提交到指定的block或者对象中，程序员无需管理线程的生命周期，也无需考虑当时CPU的使用情况以及消耗，系统会自动进行分配。NSOperation比GCD更易于管理，很简单就可以实现对执行任务的暂停取消等操作。而GCD功能更颗粒化，适合需求简单的多线程操作。</p>
+<p>A: 都是多线程问题解决方案，pthread和GCD都是一套C语言API，NSThread和NSOperation是一套OC语言的API。pthread和NSThread对线程直接操作，并且需要程序员去管理生命周期，很少使用。NSOperation和GCD不是直接面向线程操作，而是把要执行的方法提交到指定的block或者对象中，程序员无需管理线程的生命周期，也无需考虑当时CPU的使用情况以及消耗，系统会自动进行分配。NSOperation比GCD更易于管理，很简单就可以实现对执行任务的暂停取消依赖等操作。而GCD功能更颗粒化，适合需求简单的多线程操作。</p>
 </blockquote>
+<p>Q: GCD的同步/异步，并发/串行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">1. 并行队列 + 异步执行 = 多个任务同时执行 + 子线程执行；</div><div class="line">2. 串行队列 + 异步执行 = 多个任务顺序执行 + 子线程执行；</div><div class="line">3. 全局队列 + 异步执行 -&gt; 子线程执行+同时执行</div><div class="line">4. 主队列 + 异步执行 -&gt; 回到主线程方式二</div><div class="line">5. 串行队列 + 同步执行(很少使用) = 任务顺序执行 + 主线程执行</div><div class="line">6. 并行队列 + 同步执行(不用该组合) = 任务顺序执行 + 主线程执行</div><div class="line">7. 主队列 + 同步执行     -&gt; 死锁(两个任务处于相互等待)</div></pre></td></tr></table></figure>
+<p>Q: NSOperation/NSOperationQueue</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1. 依赖高于优先级</div><div class="line">2. 非线程安全</div><div class="line">3. maxConcurrentOperationCount设置的是队列中同时执行的个数，不是线程个数</div></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="https://www.jianshu.com/p/4b1d77054b35" target="_blank" rel="external">链接</a></p>
+</blockquote>
+<p>Q: 锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">1. 自旋锁：是用于多线程同步的一种锁，线程反复检查锁变量是否可用。由于线程在这一过程中保持执行，因此是一种忙等待。一旦获取了自旋锁，线程会一直保持该锁，直至显式释放自旋锁。 自旋锁避免了进程上下文的调度开销，因此对于线程只会阻塞很短时间的场合是有效的(如OSSpinLock、os_unfair_lock)</div><div class="line">2. 互斥锁：是一种用于多线程编程中，防止两条线程同时对同一公共资源（比如全局变量）进行读写的机制。该目的通过将代码切片成一个一个的临界区而达成(如NSLock、pthread_mutex、@synchronized)</div><div class="line">3. 读写锁：是计算机程序的并发控制的一种同步机制，也称“共享-互斥锁”、多读者-单写者锁) 用于解决多线程对公共资源读写问题。读操作可并发重入，写操作是互斥的。 读写锁通常用互斥锁、条件变量、信号量实现(如pthread_rwlock)</div><div class="line">4. 信号量：是一种更高级的同步机制，互斥锁可以说是semaphore在仅取值0/1时的特例。信号量可以有更多的取值空间，用来实现更加复杂的同步，而不单单是线程间互斥(dispatch_semaphore)</div><div class="line">5. 条件锁：就是条件变量，当进程的某些资源要求不满足时就进入休眠，也就是锁住了。当资源被分配到了，条件锁打开，进程继续运行(如NSCondition、NSConditionLock)</div><div class="line">6. 递归锁：同一个线程可以加锁N次而不会引发死锁。(如NSRecursiveLock、pthread_mutex的PTHREAD_MUTEX_RECURSIVE类型)</div><div class="line">7. 互斥锁是2值信号量；自旋锁不会导致等待线程睡眠；其它锁都会导致等待线程睡眠，包括信号量。</div></pre></td></tr></table></figure>
+<p>Q: 信号量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1. dispatch_semaphore_create 创建一个指定个数的信号</div><div class="line">2. dispatch_semaphore_wait 每次会使信号的个数减一，只要大于0就能顺利执行，否则要等待。</div><div class="line">3. dispatch_semaphore_signal 使信号量增加一，一定要和上面的方法成对使用，否则会crash的。</div></pre></td></tr></table></figure>
 <p>Q: 如何避免多线程的常见问题</p>
 <blockquote>
 <p>A: 选择合适的多线程技术；尽量简化线程之间的关系；尽量指定相同优先级；队列中写操作栅栏，读操作并行。</p>
