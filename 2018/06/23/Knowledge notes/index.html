@@ -92,7 +92,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/06/23/Knowledge notes/index.html">
 <meta property="og:site_name" content="YownYang's blog">
 <meta property="og:description" content="这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o">
-<meta property="og:updated_time" content="2018-09-29T14:55:48.000Z">
+<meta property="og:updated_time" content="2018-09-30T12:43:47.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="知识点杂记">
 <meta name="twitter:description" content="这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o">
@@ -514,7 +514,27 @@
 <blockquote>
 <p>将一部分编译和链接时候做的工作，转移到运行时去做</p>
 </blockquote>
-<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p>Q: Autorelease原理</p>
+<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p>Q: 主线程中的所有对象会加入到自动释放池吗？</p>
+<blockquote>
+<p>A: 不会，只有调用了autorelease方法的会。一般就是new/alloc/copy/retain之外的对象会自动调用autorelease。</p>
+</blockquote>
+<p>Q: 主线程中的对象什么时候释放？</p>
+<blockquote>
+<p>A: 如果未被加入自动释放池，在引用计数归0后，内存区域会被标记为可分配，但其中的内容并未清理。如果加入了自动释放池，在自动释放池释放时会执行一次release方法，这个时候如果引用计数为0，内存区域会被标记为可分配。</p>
+</blockquote>
+<p>Q: main函数入口的自动释放池中的对象什么时候释放？</p>
+<blockquote>
+<p>A: 系统在每次runloop开始的时候创建了一个自动释放池，在结束的时候释放这个自动释放池，对象也就是在这里释放的。</p>
+</blockquote>
+<p>Q: 子线程中没有runloop，它的自动释放池什么时候释放？</p>
+<blockquote>
+<p>A: 没有runloop，线程不会一直存在，自动释放池也会在线程结束的时候释放。</p>
+</blockquote>
+<p>Q: 内存区域的释放时机？</p>
+<blockquote>
+<p>A: 所谓的释放只是将其标为可分配，其内的值仍然存在。值的覆盖实际上发生在这块内存区域被重新使用时。</p>
+</blockquote>
+<p>Q: Autorelease原理</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">PS: 参阅NSObject.mm第628行-1191行</div><div class="line">1. AutoreleasePool本身并无结构，实质是AutoreleasePoolPage</div><div class="line">2. AutoreleasePoolPage以双向链表存在，当第一个表存满之后，就创建新表继续存储，每个表最大存储4096字节大小。</div><div class="line">3. 它有一些重要从参数和概念：next指向最新加进来的对象的下一个位置，判断是否存满也是靠这个参数的；thread，所在的线程；parent指向前一个page，child指向下一个page；holdPage最后page,coldPage首个page;每次objc_autoreleasePoolPush都会插入一个空的标志，用于在pop时使用，会直接pop到这个标志的位置。</div><div class="line">4. 明白了这些参数就很好理解了，你使用自动释放池时，就会创建一个poolpage，然后把池内对象加进来，next指向对象下一个位置；当满了，就创建新的page再加进来，设置两个page的parent和child指向。如果嵌套自动释放池，就嵌套poolpage，设置空标志。释放的时候，直接释放到空标志的地方。</div></pre></td></tr></table></figure>
 <p>Q: Autorelease对返回值的优化</p>
 <blockquote>
