@@ -121,7 +121,7 @@
     <link href="http://yoursite.com/2018/06/23/Knowledge%20notes/"/>
     <id>http://yoursite.com/2018/06/23/Knowledge notes/</id>
     <published>2018-06-23T07:04:29.000Z</published>
-    <updated>2018-09-30T12:43:47.000Z</updated>
+    <updated>2018-10-11T04:27:07.000Z</updated>
     
     <content type="html"><![CDATA[<p>这是一篇关于技术知识点的整理汇总，在技术道路上，有许多知识点属于不常用但有用的知识，如果不加以记录，时间久了记忆就会模糊，不利于知识积累。我就是深受其害o(╥﹏╥)o</p>
 <a id="more"></a>
@@ -179,6 +179,11 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">1. ARC管理内存</div><div class="line">2. 缓存机制</div><div class="line">3. 延迟加载</div><div class="line">4. 保证图片大小与容器大小相同</div><div class="line">5. 避免复杂的XIB</div><div class="line">6. 权衡渲染方法</div><div class="line">7. 重用</div><div class="line">8. AutoreleasePool</div><div class="line">9. 苹果的Profile工具检测，进一步优化具体代码</div></pre></td></tr></table></figure>
 <p>Q: tableView性能优化</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">1. 高度缓存</div><div class="line">2. cell复用</div><div class="line">3. 图片按需加载</div><div class="line">4. 大的数据在其他线程操作</div></pre></td></tr></table></figure>
+<p>Q: 读取一个xib文件的步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">1. 将xib编译后的nib文件读入内存，包括引用的图片资源</div><div class="line">2. 对nib文件进行解档，并将各元素根据类型初始化，通过initWithCoder:方法</div><div class="line">3. 进行连接，对IBoutlet通过KVC的方式赋值；对IBAction通过addTarget:action:forControlEvents添加方法</div><div class="line">4. 给界面对象发送awakeFromNib消息</div></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="https://www.jianshu.com/p/d937da4b27cc" target="_blank" rel="external">参考连接</a></p>
+</blockquote>
 <h3 id="多线程相关"><a href="#多线程相关" class="headerlink" title="多线程相关"></a>多线程相关</h3><p>Q: 多线程是什么，作用，缺点</p>
 <blockquote>
 <p>A: 多线程是指多个线程并发执行的技术。作用是用来提升同一时间段内系统的处理效率，也就是作业量。缺点是消耗资源，使用不当容易造成数据竞争，死锁，优先级反转等问题。</p>
@@ -296,6 +301,18 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">1. 根据对象地址去查找ObjectAssociationMap</div><div class="line">2. 根据key在ObjectAssociationMap中查找对应的关联引用，存在就返回ObjcAssociation的value值，不存在返回nil。</div></pre></td></tr></table></figure>
 <p>Q: objc_removeAssociatedObjects</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1. 根据对象地址去查找ObjectAssociationMap</div><div class="line">2. 将ObjectAssociationMap所有关联引用存储到vector中</div><div class="line">3. 释放所有存储对象</div></pre></td></tr></table></figure>
+<h3 id="JavaScriptCore框架相关"><a href="#JavaScriptCore框架相关" class="headerlink" title="JavaScriptCore框架相关"></a>JavaScriptCore框架相关</h3><h4 id="JSCore框架特性"><a href="#JSCore框架特性" class="headerlink" title="JSCore框架特性"></a>JSCore框架特性</h4><ol>
+<li>自动化的，类型自动转换</li>
+<li>安全的，JS是一门动态类型语言，OC是静态类型语言，它保证了转化过程中不会产生crash，并且JSCore提供的方法是线程安全的</li>
+<li>高保真的，说白了就是两边互不侵犯，写OC就写OC，写JS就写JS</li>
+</ol>
+<h4 id="JSCore框架中的几个类"><a href="#JSCore框架中的几个类" class="headerlink" title="JSCore框架中的几个类"></a>JSCore框架中的几个类</h4><ol>
+<li>JSContext 提供JS执行环境的类</li>
+<li>JSValue 是对JS对象的封装，包括函数，可以进行OC对象和JS对象的转化</li>
+<li>JSManagedValue 因为JSValue是对js值得强引用，所以很容易造成内存问题，这样就有了JSManagedValue</li>
+<li>JSExport 一个协议，使用这个协议，可以将OC中的对象暴露给JS使用。也可以通过直接给jsContext注入block进行单个方法的注入</li>
+<li>JSVirtualMachine 它为JS运行提供了底层资源，有独立的堆栈以及垃圾回收机制。一个进程可以包含多个JSVirtualMachine，一个JSVirtualMachine可以包含多个JSContext。一个JSVirtualMachine下不同JSContext中的JSValue可以互相传递，但是不同的JSVirtualMachine不行。</li>
+</ol>
 <h3 id="冷门小知识"><a href="#冷门小知识" class="headerlink" title="冷门小知识"></a>冷门小知识</h3><p>Q: ==，isEqual，各类衍生的isEqualXXX的区别</p>
 <blockquote>
 <p>==直接判断，判断基本类型时，判断值是否相等。判断对象时，判断所指向内存地址是否相同。</p>
